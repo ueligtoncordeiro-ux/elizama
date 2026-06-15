@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elizama — Eu amo, tu amas, Elizama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #1A5BD9;
+    --coral: #E8443A;
+    --azul-light: #EBF1FC;
+    --coral-light: #FDECEA;
+    --off-white: #F8F6F2;
+    --texto: #111827;
+    --suave: #6B7280;
+    --borda: #E5E7EB;
+    --branco: #FFFFFF;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body { font-family: 'DM Sans', sans-serif; color: var(--texto); background: var(--branco); overflow-x: hidden; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: transparent;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%; height: 72px;
+    transition: background 0.4s, box-shadow 0.4s, border-color 0.4s;
+    border-bottom: 1px solid transparent;
+  }
+  nav.scrolled { background: rgba(255,255,255,0.97); backdrop-filter: blur(12px); border-color: var(--borda); box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
+  .nav-logo { display: flex; align-items: baseline; }
+  .nav-logo .eliz { font-weight: 700; font-size: 1.6rem; color: white; letter-spacing: -0.02em; transition: color 0.4s; }
+  .nav-logo .ama  { font-weight: 700; font-size: 1.6rem; color: rgba(255,255,255,0.8); letter-spacing: -0.02em; transition: color 0.4s; }
+  nav.scrolled .nav-logo .eliz { color: var(--azul); }
+  nav.scrolled .nav-logo .ama  { color: var(--coral); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 500; transition: color 0.3s; }
+  .nav-links a:hover { color: white; }
+  nav.scrolled .nav-links a { color: var(--suave); }
+  nav.scrolled .nav-links a:hover { color: var(--texto); }
+  .btn-doe-nav { background: white; color: var(--coral); border: none; padding: 0.6rem 1.5rem; border-radius: 100px; font-weight: 700; font-size: 0.875rem; cursor: pointer; text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+  .btn-doe-nav:hover { background: var(--coral); color: white; transform: translateY(-1px); }
+  nav.scrolled .btn-doe-nav { background: var(--coral); color: white; box-shadow: none; }
+
+  /* HERO SLIDER */
+  .hero-slider { position: relative; width: 100%; height: 100vh; min-height: 580px; overflow: hidden; }
+  .slides-track { display: flex; width: 100%; height: 100%; transition: transform 0.85s cubic-bezier(0.77, 0, 0.175, 1); }
+  .slide { min-width: 100%; height: 100%; position: relative; overflow: hidden; flex-shrink: 0; }
+
+  .slide-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    transform: scale(1.06);
+    transition: transform 8s ease-out;
+  }
+  .slide.active .slide-bg { transform: scale(1.0); }
+
+  /* Gradiente azul para slides ímpares */
+  .slide:nth-child(odd) .slide-overlay {
+    background: linear-gradient(135deg, rgba(26,91,217,0.82) 0%, rgba(26,91,217,0.38) 55%, rgba(0,0,0,0.20) 100%);
+  }
+  /* Gradiente coral para slides pares */
+  .slide:nth-child(even) .slide-overlay {
+    background: linear-gradient(135deg, rgba(184,30,26,0.80) 0%, rgba(26,91,217,0.32) 60%, rgba(0,0,0,0.18) 100%);
+  }
+
+  .slide-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 8%; padding-top: 72px; }
+
+  .slide-content {
+    max-width: 660px;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.85s 0.35s ease, transform 0.85s 0.35s ease;
+  }
+  .slide.active .slide-content { opacity: 1; transform: translateY(0); }
+
+  .slide-kicker { display: inline-block; background: rgba(255,255,255,0.16); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 100px; padding: 0.35rem 1.1rem; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.25rem; }
+  .slide-title { font-family: 'Fraunces', serif; font-size: clamp(2.5rem, 5.5vw, 5rem); font-weight: 900; color: white; line-height: 1.02; letter-spacing: -0.02em; margin-bottom: 1rem; text-shadow: 0 2px 24px rgba(0,0,0,0.25); }
+  .slide-title .t-coral { color: #FFD0CD; }
+  .slide-title .t-azul  { color: #C0D8FF; }
+  .slide-text { font-size: 1.08rem; color: rgba(255,255,255,0.88); line-height: 1.65; margin-bottom: 2rem; max-width: 500px; text-shadow: 0 1px 8px rgba(0,0,0,0.18); }
+  .slide-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-sp { background: white; color: var(--coral); padding: 0.85rem 2rem; border-radius: 100px; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.22); transition: transform 0.15s, box-shadow 0.2s; }
+  .btn-sp:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+  .btn-sg { background: transparent; color: white; padding: 0.85rem 2rem; border-radius: 100px; font-weight: 600; font-size: 0.95rem; text-decoration: none; border: 2px solid rgba(255,255,255,0.5); transition: border-color 0.2s, background 0.2s; }
+  .btn-sg:hover { border-color: white; background: rgba(255,255,255,0.12); }
+
+  .slide-photo-label { position: absolute; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.7); font-size: 0.68rem; padding: 0.3rem 0.75rem; border-radius: 6px; pointer-events: none; z-index: 5; }
+
+  /* Setas */
+  .slider-arrow { position: absolute; top: 50%; z-index: 10; width: 52px; height: 52px; background: rgba(255,255,255,0.18); backdrop-filter: blur(8px); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transform: translateY(-50%); transition: background 0.2s, transform 0.2s; color: white; }
+  .slider-arrow:hover { background: rgba(255,255,255,0.32); transform: translateY(-50%) scale(1.07); }
+  .slider-prev { left: 2.5%; }
+  .slider-next { right: 2.5%; }
+
+  /* Dots */
+  .slider-dots { position: absolute; bottom: 2.25rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.6rem; z-index: 10; }
+  .sdot { width: 8px; height: 8px; border-radius: 100px; background: rgba(255,255,255,0.4); cursor: pointer; transition: width 0.35s, background 0.35s; }
+  .sdot.active { width: 28px; background: white; }
+
+  /* Progress bar do slider */
+  .slide-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.15); z-index: 10; }
+  .spfill { height: 100%; background: white; width: 0; }
+  .spfill.run { animation: sprun 5s linear forwards; }
+  @keyframes sprun { from { width: 0; } to { width: 100%; } }
+
+  /* INFO BAR */
+  .hero-infobar { background: white; display: flex; align-items: stretch; border-bottom: 1px solid var(--borda); box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .infobar-item { flex: 1; padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 0.2rem; border-right: 1px solid var(--borda); text-align: center; }
+  .infobar-item:last-child { border-right: none; }
+  .infobar-num { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; }
+  .nc { color: var(--coral); } .na { color: var(--azul); }
+  .infobar-label { font-size: 0.75rem; color: var(--suave); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  .infobar-progress { height: 4px; background: var(--borda); border-radius: 100px; margin-top: 0.6rem; overflow: hidden; }
+  .infobar-fill { height: 100%; background: linear-gradient(90deg, var(--azul), var(--coral)); border-radius: 100px; width: 0; animation: pIn 1.4s ease-out 0.3s forwards; }
+  @keyframes pIn { to { width: 38%; } }
+
+  /* SECOES */
+  section { padding: 6rem 8%; }
+  .section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--coral); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Fraunces', serif; font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1.25rem; }
+  .section-body { font-size: 1.05rem; line-height: 1.75; color: var(--suave); max-width: 560px; }
+  .nota { background: #FFF3CD; border: 1px solid #FFC107; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.72rem; color: #7D4700; margin-top: 0.75rem; }
+  .btn-p { background: var(--coral); color: white; padding: 0.9rem 2.2rem; border-radius: 100px; font-weight: 600; font-size: 1rem; text-decoration: none; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(232,68,58,0.28); display: inline-block; }
+  .btn-p:hover { background: #c73430; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,68,58,0.4); }
+  .btn-s { background: transparent; color: var(--azul); padding: 0.9rem 2.2rem; border-radius: 100px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 2px solid var(--azul); cursor: pointer; transition: background 0.2s, transform 0.15s; display: inline-block; }
+  .btn-s:hover { background: var(--azul-light); transform: translateY(-2px); }
+
+  /* HISTORIA */
+  .historia { background: white; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .photo-ph { background: linear-gradient(135deg, var(--azul-light), var(--coral-light)); border-radius: 24px; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--suave); border: 2px dashed var(--borda); }
+  .historia-quote { background: var(--off-white); border-left: 4px solid var(--coral); border-radius: 0 12px 12px 0; padding: 1.25rem 1.5rem; font-family: 'Fraunces', serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; margin-top: 1.5rem; }
+
+  /* COMO AJUDAR */
+  .como-ajudar { background: var(--off-white); }
+  .como-header { text-align: center; margin-bottom: 3.5rem; }
+  .ajudar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+  .ajudar-card { background: white; border-radius: 20px; padding: 2rem; border: 1.5px solid var(--borda); transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; display: flex; flex-direction: column; gap: 0.75rem; text-decoration: none; color: inherit; }
+  .ajudar-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); border-color: var(--coral); }
+  .card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  .ia { background: var(--azul-light); } .ic { background: var(--coral-light); }
+  .card-title { font-weight: 700; font-size: 1.05rem; }
+  .card-desc { font-size: 0.85rem; color: var(--suave); line-height: 1.6; }
+  .card-link { font-size: 0.8rem; font-weight: 600; color: var(--coral); margin-top: auto; }
+
+  /* FORMULARIO */
+  .doe-section { background: white; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .donate-card { background: var(--off-white); border-radius: 28px; padding: 2.5rem; border: 1.5px solid var(--borda); }
+  .dlabel { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--suave); margin-bottom: 1rem; }
+  .da-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem; margin-bottom: 1rem; }
+  .abtn { border: 2px solid var(--borda); background: white; border-radius: 12px; padding: 0.7rem; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; color: var(--texto); }
+  .abtn:hover, .abtn.active { border-color: var(--coral); background: var(--coral-light); color: var(--coral); }
+  .acustom { border: 2px solid var(--borda); border-radius: 12px; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 600; width: 100%; margin-bottom: 1rem; outline: none; font-family: 'DM Sans', sans-serif; background: white; transition: border-color 0.15s; }
+  .acustom:focus { border-color: var(--coral); }
+  .popts { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .popt { border: 1.5px solid var(--borda); border-radius: 8px; padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; background: white; transition: all 0.15s; color: var(--suave); font-family: 'DM Sans', sans-serif; }
+  .popt:hover { border-color: var(--azul); color: var(--azul); }
+  .popt.active { border-color: var(--azul); color: var(--azul); background: var(--azul-light); }
+  .rec-toggle { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--suave); cursor: pointer; }
+  .tgl { width: 36px; height: 20px; background: var(--borda); border-radius: 100px; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .tgl.on { background: var(--azul); }
+  .tgl::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .tgl.on::after { left: 19px; }
+  .btn-doe-card { width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--coral), #c73430); color: white; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(232,68,58,0.35); transition: transform 0.15s, box-shadow 0.2s; }
+  .btn-doe-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,68,58,0.45); }
+  .secure-b { display: flex; align-items: center; gap: 0.4rem; justify-content: center; font-size: 0.72rem; color: var(--suave); margin-top: 0.75rem; }
+
+  /* CROWDFUNDING */
+  .crowdfunding { background: var(--off-white); display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: center; }
+  .meta-card { background: white; border-radius: 24px; padding: 2.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.06); border: 1px solid var(--borda); }
+  .meta-valor { font-family: 'Fraunces', serif; font-size: 2.5rem; font-weight: 900; color: var(--coral); letter-spacing: -0.03em; margin-bottom: 0.2rem; }
+  .meta-de { font-size: 0.85rem; color: var(--suave); margin-bottom: 1.25rem; }
+  .meta-bar { height: 12px; background: var(--borda); border-radius: 100px; margin-bottom: 1rem; overflow: hidden; }
+  .meta-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--azul), var(--coral)); border-radius: 100px; animation: pIn 1.4s 0.3s ease-out forwards; }
+  @keyframes pIn2 { to { width: 38%; } }
+  .meta-stats { display: flex; gap: 2rem; }
+  .mstat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .mstat-n { font-weight: 700; font-size: 1.2rem; }
+  .mstat-l { font-size: 0.75rem; color: var(--suave); }
+  .apoiadores { display: flex; margin-top: 1.5rem; align-items: center; }
+  .aavatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--azul), var(--coral)); border: 2.5px solid white; margin-left: -10px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: white; }
+  .aavatar:first-child { margin-left: 0; }
+  .apoiadores-t { margin-left: 0.75rem; font-size: 0.8rem; color: var(--suave); }
+
+  /* EMBAIXADORES */
+  .embaixadores { background: white; }
+  .emb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+  .emb-steps { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
+  .emb-step { display: flex; gap: 1rem; align-items: flex-start; }
+  .emb-num { width: 36px; height: 36px; border-radius: 50%; background: var(--azul); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+  .est-t { font-weight: 600; font-size: 0.95rem; }
+  .est-d { font-size: 0.85rem; color: var(--suave); line-height: 1.5; }
+  .emb-preview { background: var(--off-white); border-radius: 20px; padding: 1.75rem; border: 1px solid var(--borda); }
+  .emb-person { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+  .emb-av { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--azul), var(--coral)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+  .emb-mb { height: 8px; background: var(--borda); border-radius: 100px; margin: 0.75rem 0 0.4rem; overflow: hidden; }
+  .emb-mf { height: 100%; width: 40%; background: linear-gradient(90deg, var(--azul), var(--coral)); border-radius: 100px; }
+
+  /* ALTERNATIVAS */
+  .alternativas { background: var(--off-white); }
+  .alt-header { text-align: center; margin-bottom: 3rem; }
+  .alt-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .alt-card { border-radius: 20px; overflow: hidden; border: 1.5px solid var(--borda); display: flex; flex-direction: column; background: white; }
+  .alt-top { padding: 2rem; background: linear-gradient(135deg, var(--azul-light), var(--coral-light)); display: flex; align-items: center; justify-content: center; font-size: 3rem; min-height: 130px; }
+  .alt-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
+  .alt-title { font-weight: 700; font-size: 1.05rem; }
+  .alt-desc { font-size: 0.85rem; color: var(--suave); line-height: 1.6; flex: 1; }
+  .alt-cta { display: inline-block; margin-top: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--coral); text-decoration: none; border: 1.5px solid var(--coral); border-radius: 100px; padding: 0.4rem 1rem; width: fit-content; transition: background 0.15s, color 0.15s; }
+  .alt-cta:hover { background: var(--coral); color: white; }
+
+  /* PORTAL */
+  .portal { background: white; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .portal-ui { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.1); border: 1px solid var(--borda); }
+  .ptop { background: #1E293B; padding: 0.75rem 1.25rem; display: flex; gap: 0.5rem; align-items: center; }
+  .pdot { width: 10px; height: 10px; border-radius: 50%; }
+  .pcontent { display: flex; }
+  .psidebar { background: #F1F5F9; width: 150px; padding: 1rem; border-right: 1px solid var(--borda); }
+  .pnav { font-size: 0.72rem; padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.25rem; color: var(--suave); font-weight: 500; }
+  .pnav.active { background: white; color: var(--texto); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .pmain { padding: 1.25rem; flex: 1; }
+  .prow { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--borda); font-size: 0.72rem; gap: 0.4rem; }
+  .prow:last-child { border-bottom: none; }
+  .tok { background: #DCFCE7; color: #16A34A; border-radius: 100px; padding: 0.15rem 0.5rem; font-size: 0.65rem; font-weight: 600; white-space: nowrap; }
+  .tpend { background: #FEF9C3; color: #B45309; border-radius: 100px; padding: 0.15rem 0.5rem; font-size: 0.65rem; font-weight: 600; white-space: nowrap; }
+
+  /* CTA FINAL */
+  .cta-final { background: linear-gradient(135deg, var(--azul) 0%, #0F3A8A 50%, #7B1E1A 100%); color: white; text-align: center; padding: 7rem 8%; position: relative; overflow: hidden; }
+  .cta-final::before { content: 'ELIZAMA'; position: absolute; font-family: 'Fraunces', serif; font-size: 20vw; font-weight: 900; opacity: 0.05; color: white; top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; }
+  .cta-final .section-title { color: white; margin: 0 auto 1rem; max-width: 640px; }
+  .cta-final .section-body { color: rgba(255,255,255,0.7); margin: 0 auto 2.5rem; }
+  .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-w { background: white; color: var(--coral); padding: 0.9rem 2.2rem; border-radius: 100px; font-weight: 700; font-size: 1rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.15s, box-shadow 0.2s; border: none; cursor: pointer; }
+  .btn-w:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+  .btn-gw { background: transparent; color: white; padding: 0.9rem 2.2rem; border-radius: 100px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 2px solid rgba(255,255,255,0.4); transition: border-color 0.2s, background 0.2s; }
+  .btn-gw:hover { border-color: white; background: rgba(255,255,255,0.1); }
+
+  /* FOOTER */
+  footer { background: #111827; color: rgba(255,255,255,0.6); padding: 3rem 8%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
+  .fl .eliz { color: white; font-weight: 700; font-size: 1.2rem; }
+  .fl .ama  { color: var(--coral); font-weight: 700; font-size: 1.2rem; }
+  .footer-copy { font-size: 0.8rem; }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+  .footer-links a:hover { color: white; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .historia, .crowdfunding, .emb-grid, .portal, .doe-section { grid-template-columns: 1fr; }
+    .alt-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    section { padding: 4rem 5%; }
+    .hero-infobar { flex-direction: column; }
+    .infobar-item { border-right: none; border-bottom: 1px solid var(--borda); }
+    .infobar-item:last-child { border-bottom: none; }
+    .slide-title { font-size: 2.2rem; }
+    .slide-overlay { padding: 0 5%; padding-top: 72px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-logo"><span class="eliz">ELIZ</span><span class="ama">AMA</span></div>
+  <ul class="nav-links">
+    <li><a href="#historia">A história</a></li>
+    <li><a href="#como-ajudar">Como ajudar</a></li>
+    <li><a href="#crowdfunding">Meta</a></li>
+    <li><a href="#embaixadores">Embaixadores</a></li>
+  </ul>
+  <a href="#doe" class="btn-doe-nav">Doe agora</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  HERO SLIDER — BANNERS COM FOTO               -->
+<!--  Para inserir foto em cada slide:             -->
+<!--  altere background-color pelo background-image -->
+<!--  ex: background-image: url('foto.jpg')        -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="hero-slider" id="heroSlider">
+  <div class="slides-track" id="slidesTrack">
+
+    <!-- SLIDE 1 ─ Substituir background-color por background-image -->
+    <div class="slide active">
+      <div class="slide-bg" style="background-color: #1a3560;
+        /* ⬇ DESCOMENTE E INSIRA O CAMINHO DA FOTO:
+        background-image: url('fotos/elizama-01.jpg'); */
+      "></div>
+      <div class="slide-overlay">
+        <div class="slide-content">
+          <span class="slide-kicker">Movimento em Apoio a Elizama</span>
+          <h1 class="slide-title">Eu amo,<br>tu amas,<br><span class="t-coral">ELIZAMA.</span></h1>
+          <p class="slide-text">Uma comunidade unida em torno de uma pessoa especial. Cada ato de amor transforma a jornada dela.</p>
+          <div class="slide-ctas">
+            <a href="#doe" class="btn-sp">Quero doe agora</a>
+            <a href="#historia" class="btn-sg">Conhecer a história</a>
+          </div>
+        </div>
+      </div>
+      <div class="slide-photo-label">Slide 1 · Inserir foto</div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide">
+      <div class="slide-bg" style="background-color: #5a1210;
+        /* background-image: url('fotos/elizama-02.jpg'); */
+      "></div>
+      <div class="slide-overlay">
+        <div class="slide-content">
+          <span class="slide-kicker">Juntos somos o amor que transforma</span>
+          <h1 class="slide-title">Ela luta.<br>Nós <span class="t-azul">amamos.</span></h1>
+          <p class="slide-text">A Elizama enfrenta o câncer com coragem. Mas nenhuma jornada precisa ser solitária — e a sua presença faz diferença real.</p>
+          <div class="slide-ctas">
+            <a href="#doe" class="btn-sp">Fazer minha parte</a>
+            <a href="#como-ajudar" class="btn-sg">Formas de ajudar</a>
+          </div>
+        </div>
+      </div>
+      <div class="slide-photo-label">Slide 2 · Inserir foto</div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide">
+      <div class="slide-bg" style="background-color: #0d2950;
+        /* background-image: url('fotos/elizama-03.jpg'); */
+      "></div>
+      <div class="slide-overlay">
+        <div class="slide-content">
+          <span class="slide-kicker">Sistema de Embaixadores</span>
+          <h1 class="slide-title">Você pode<br>multiplicar<br><span class="t-coral">o amor.</span></h1>
+          <p class="slide-text">Seja embaixador. Crie seu link, compartilhe com sua rede e veja o impacto real da sua participação.</p>
+          <div class="slide-ctas">
+            <a href="#embaixadores" class="btn-sp">Ser embaixador</a>
+            <a href="#doe" class="btn-sg">Ou doe agora</a>
+          </div>
+        </div>
+      </div>
+      <div class="slide-photo-label">Slide 3 · Inserir foto</div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide">
+      <div class="slide-bg" style="background-color: #6b1a17;
+        /* background-image: url('fotos/evento.jpg'); */
+      "></div>
+      <div class="slide-overlay">
+        <div class="slide-content">
+          <span class="slide-kicker">Rifa · Eventos · Leilão</span>
+          <h1 class="slide-title">Doe, concorra,<br><span class="t-azul">celebre.</span></h1>
+          <p class="slide-text">Participe de eventos solidários, rifas e leilões. Há muitos caminhos para o amor se manifestar.</p>
+          <div class="slide-ctas">
+            <a href="#alternativas" class="btn-sp">Ver eventos e rifas</a>
+            <a href="#doe" class="btn-sg">Doe agora</a>
+          </div>
+        </div>
+      </div>
+      <div class="slide-photo-label">Slide 4 · Inserir foto</div>
+    </div>
+
+  </div>
+
+  <!-- Setas -->
+  <button class="slider-arrow slider-prev" id="sPrev" aria-label="Anterior">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button class="slider-arrow slider-next" id="sNext" aria-label="Próximo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+
+  <!-- Dots -->
+  <div class="slider-dots" id="sDots">
+    <div class="sdot active" data-i="0"></div>
+    <div class="sdot" data-i="1"></div>
+    <div class="sdot" data-i="2"></div>
+    <div class="sdot" data-i="3"></div>
+  </div>
+
+  <!-- Barra de progresso -->
+  <div class="slide-progress"><div class="spfill run" id="spfill"></div></div>
+</div>
+
+<!-- INFO BAR -->
+<div class="hero-infobar">
+  <div class="infobar-item">
+    <span class="infobar-num nc">R$ —</span>
+    <span class="infobar-label">Arrecadado</span>
+    <div class="infobar-progress"><div class="infobar-fill"></div></div>
+  </div>
+  <div class="infobar-item">
+    <span class="infobar-num na">—</span>
+    <span class="infobar-label">Doadores</span>
+  </div>
+  <div class="infobar-item">
+    <span class="infobar-num">—</span>
+    <span class="infobar-label">Embaixadores ativos</span>
+  </div>
+  <div class="infobar-item">
+    <span class="infobar-num">—</span>
+    <span class="infobar-label">Dias de campanha</span>
+  </div>
+</div>
+
+<!-- HISTÓRIA -->
+<section class="historia" id="historia">
+  <div class="photo-ph">
+    <span style="font-size:3rem;opacity:0.3;">📷</span>
+    <p style="font-size:0.8rem;text-align:center;max-width:160px;opacity:0.55;">Foto de Elizama — inserir após autorização</p>
+  </div>
+  <div>
+    <p class="section-label">A história</p>
+    <h2 class="section-title">Quem é Elizama?</h2>
+    <p class="section-body">[Narrativa pessoal de Elizama — inserir após confirmar o que ela autoriza compartilhar sobre diagnóstico, trajetória e necessidade.]</p>
+    <blockquote class="historia-quote">"Eu amo, tu amas — e juntos, somos o amor que ela precisa agora."</blockquote>
+    <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+      <a href="#doe" class="btn-p">Apoiar Elizama</a>
+      <a href="#como-ajudar" class="btn-s">Ver formas de ajuda</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMO AJUDAR -->
+<section class="como-ajudar" id="como-ajudar">
+  <div class="como-header">
+    <p class="section-label">Formas de apoio</p>
+    <h2 class="section-title">Como você pode ajudar</h2>
+    <p class="section-body" style="max-width:500px;margin:0 auto;">Há muitos caminhos para o amor se manifestar. Escolha o que faz mais sentido para você.</p>
+  </div>
+  <div class="ajudar-grid">
+    <a href="#doe" class="ajudar-card"><div class="card-icon ic">💳</div><p class="card-title">Doação Direta</p><p class="card-desc">PIX, cartão, boleto ou PayPal. Rápido e seguro via doare.org.</p><span class="card-link">Doe agora →</span></a>
+    <a href="#crowdfunding" class="ajudar-card"><div class="card-icon ia">🎯</div><p class="card-title">Crowdfunding</p><p class="card-desc">Acompanhe a meta coletiva em tempo real. Recebimento flexível.</p><span class="card-link">Ver a meta →</span></a>
+    <a href="#embaixadores" class="ajudar-card"><div class="card-icon ic">📣</div><p class="card-title">Seja Embaixador</p><p class="card-desc">Crie seu link e arrecade dentro da sua rede — P2P exponencial.</p><span class="card-link">Ser embaixador →</span></a>
+    <a href="#rifa" class="ajudar-card"><div class="card-icon ia">🎟️</div><p class="card-title">Rifa Solidária</p><p class="card-desc">Concorra a prêmios e ajude ao mesmo tempo. Transparente.</p><span class="card-link">Participar →</span></a>
+    <a href="#eventos" class="ajudar-card"><div class="card-icon ic">🏃</div><p class="card-title">Eventos</p><p class="card-desc">Corridas, bazares e jantares beneficentes com ingressos online.</p><span class="card-link">Ver eventos →</span></a>
+    <a href="#leilao" class="ajudar-card"><div class="card-icon ia">🔨</div><p class="card-title">Leilão Solidário</p><p class="card-desc">Dê lances em itens e experiências doados por parceiros.</p><span class="card-link">Ver leilão →</span></a>
+  </div>
+</section>
+
+<!-- FORMULÁRIO DE DOAÇÃO -->
+<section class="doe-section" id="doe">
+  <div>
+    <p class="section-label">Formulário de Doação</p>
+    <h2 class="section-title">Doe agora.<br>Sem sair desta página.</h2>
+    <p class="section-body">Ambiente seguro integrado ao doare.org. Escolha o valor e a forma — a confirmação é imediata.</p>
+    <ul style="margin-top:1.5rem;list-style:none;display:flex;flex-direction:column;gap:0.6rem;">
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> PIX, cartão, boleto, PayPal, PicPay</li>
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Doação recorrente mensal</li>
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Confirmação imediata por e-mail</li>
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Transparência total no uso dos recursos</li>
+    </ul>
+  </div>
+  <div class="donate-card">
+    <p class="dlabel">Informe o valor da sua doação</p>
+    <div class="da-grid">
+      <button class="abtn" onclick="selAmt(this)">R$ 30</button>
+      <button class="abtn" onclick="selAmt(this)">R$ 50</button>
+      <button class="abtn active" onclick="selAmt(this)">R$ 100</button>
+      <button class="abtn" onclick="selAmt(this)">R$ 200</button>
+      <button class="abtn" onclick="selAmt(this)">R$ 500</button>
+      <button class="abtn" onclick="selAmt(this)">Outro</button>
+    </div>
+    <input class="acustom" type="text" placeholder="R$ Outro valor">
+    <p class="dlabel" style="margin-top:0.25rem;">Forma de pagamento</p>
+    <div class="popts">
+      <button class="popt active" onclick="selPay(this)">PIX</button>
+      <button class="popt" onclick="selPay(this)">Cartão</button>
+      <button class="popt" onclick="selPay(this)">Boleto</button>
+      <button class="popt" onclick="selPay(this)">PayPal</button>
+      <button class="popt" onclick="selPay(this)">PicPay</button>
+    </div>
+    <div class="rec-toggle" onclick="this.querySelector('.tgl').classList.toggle('on')">
+      <div class="tgl"></div>
+      <span>Continuar doando mensalmente</span>
+    </div>
+    <button class="btn-doe-card" onclick="doareRedir()">Doe agora — com amor</button>
+    <div class="secure-b">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Ambiente seguro · via doare.org
+    </div>
+    <p class="nota">⚠ Substituir pelo widget embed do doare.org após configurar a campanha.</p>
+  </div>
+</section>
+
+<!-- CROWDFUNDING -->
+<section class="crowdfunding" id="crowdfunding">
+  <div>
+    <p class="section-label">Meta coletiva</p>
+    <h2 class="section-title">Cada real conta.<br>Cada amor soma.</h2>
+    <p class="section-body">Acompanhe a meta em tempo real. Cada doação é visível e verificável.</p>
+    <p class="nota" style="max-width:460px;">⚠ Definir valor da meta após confirmação com Elizama e o grupo organizador.</p>
+    <div style="margin-top:2rem;"><a href="#doe" class="btn-p">Contribuir agora</a></div>
+  </div>
+  <div class="meta-card">
+    <p class="meta-valor">R$ —</p>
+    <p class="meta-de">arrecadado de R$ — · <strong>—%</strong></p>
+    <div class="meta-bar"><div class="meta-fill" style="animation: pIn2 1.4s 0.3s ease-out forwards;"></div></div>
+    <div class="meta-stats">
+      <div class="mstat"><span class="mstat-n">—</span><span class="mstat-l">Doadores</span></div>
+      <div class="mstat"><span class="mstat-n">—</span><span class="mstat-l">Dias restantes</span></div>
+      <div class="mstat"><span class="mstat-n">—%</span><span class="mstat-l">Concluído</span></div>
+    </div>
+    <div class="apoiadores">
+      <div class="aavatar">A</div><div class="aavatar">B</div><div class="aavatar">C</div><div class="aavatar">+</div>
+      <span class="apoiadores-t">pessoas que já doaram</span>
+    </div>
+  </div>
+</section>
+
+<!-- EMBAIXADORES -->
+<section class="embaixadores" id="embaixadores">
+  <div class="emb-grid">
+    <div>
+      <p class="section-label">Sistema de embaixadores</p>
+      <h2 class="section-title">Multiplique o amor<br>pela sua rede</h2>
+      <p class="section-body">Crie seu link e arrecade para a campanha da Elizama dentro da sua rede. Cada novo doador que você trouxer é um ato concreto de amor.</p>
+      <div class="emb-steps">
+        <div class="emb-step"><div class="emb-num">1</div><div><p class="est-t">Cadastre-se como embaixador</p><p class="est-d">Crie seu perfil gratuito integrado à campanha no doare.org.</p></div></div>
+        <div class="emb-step"><div class="emb-num">2</div><div><p class="est-t">Compartilhe seu link único</p><p class="est-d">Cada doação pelo seu link é registrada e atribuída a você.</p></div></div>
+        <div class="emb-step"><div class="emb-num">3</div><div><p class="est-t">Acompanhe seu impacto</p><p class="est-d">Veja em tempo real quanto você ajudou a arrecadar.</p></div></div>
+      </div>
+      <div style="margin-top:2rem;"><a href="#" class="btn-p">Quero ser embaixador</a></div>
+    </div>
+    <div class="emb-preview">
+      <div class="emb-person">
+        <div class="emb-av">👤</div>
+        <div><p style="font-weight:600;font-size:0.95rem;">Seu Nome Aqui</p><p style="font-size:0.78rem;color:var(--coral);font-weight:500;">Está arrecadando para Elizama</p></div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--suave);">Arrecadado pelo embaixador</p>
+      <p style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;margin:0.25rem 0;">R$ —</p>
+      <div class="emb-mb"><div class="emb-mf"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--suave);"><span>Meta: R$ —</span><span>—%</span></div>
+      <div style="margin-top:1rem;font-size:0.72rem;color:var(--suave);background:white;border-radius:8px;padding:0.5rem 0.75rem;border:1px solid var(--borda);">🔗 doare.org/elizama?emb=<strong>seulink</strong></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+        <span style="font-size:0.72rem;background:var(--azul-light);color:var(--azul);border-radius:6px;padding:0.25rem 0.6rem;font-weight:600;">📋 Copiar link</span>
+        <span style="font-size:0.72rem;background:#F0FFF4;color:#16A34A;border-radius:6px;padding:0.25rem 0.6rem;font-weight:600;">💬 WhatsApp</span>
+        <span style="font-size:0.72rem;background:var(--coral-light);color:var(--coral);border-radius:6px;padding:0.25rem 0.6rem;font-weight:600;">📸 Instagram</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RIFA / EVENTOS / LEILÃO -->
+<section class="alternativas" id="alternativas">
+  <div class="alt-header">
+    <p class="section-label">Mais formas de ajudar</p>
+    <h2 class="section-title">Amor em ação</h2>
+    <p class="section-body" style="margin:0 auto;max-width:480px;">Gamificação, eventos e leilões — formas diversas de engajamento com a causa.</p>
+  </div>
+  <div class="alt-grid">
+    <div class="alt-card" id="rifa">
+      <div class="alt-top">🎟️</div>
+      <div class="alt-body">
+        <p class="alt-title">Rifa Solidária</p>
+        <p class="alt-desc">Bilhetes, prêmios e sorteio filantrópico transparente. Doe e concorra ao mesmo tempo.</p>
+        <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.4rem;"><span style="font-weight:600;">Bilhetes vendidos</span><span style="color:var(--coral);font-weight:600;">— / —</span></div>
+          <div style="height:4px;background:var(--borda);border-radius:100px;"></div>
+          <p class="nota" style="margin-top:0.4rem;">⚠ Configurar rifa no doare.org</p>
+        </div>
+        <a href="#" class="alt-cta">Participar do sorteio</a>
+      </div>
+    </div>
+    <div class="alt-card" id="eventos">
+      <div class="alt-top">🏃</div>
+      <div class="alt-body">
+        <p class="alt-title">Eventos Solidários</p>
+        <p class="alt-desc">Corridas, bazares e jantares. Venda de ingressos com QR code e check-in online via doare.org.</p>
+        <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
+          <p style="font-size:0.75rem;font-weight:600;margin-bottom:0.3rem;">Próximos eventos</p>
+          <p style="font-size:0.72rem;color:var(--suave);font-style:italic;">[A definir — inserir data e local]</p>
+          <p class="nota" style="margin-top:0.4rem;">⚠ Criar evento no doare.org</p>
+        </div>
+        <a href="#" class="alt-cta">Inscrever-se</a>
+      </div>
+    </div>
+    <div class="alt-card" id="leilao">
+      <div class="alt-top">🔨</div>
+      <div class="alt-body">
+        <p class="alt-title">Leilão Solidário</p>
+        <p class="alt-desc">Produtos e experiências doados por parceiros. Cada lance é uma declaração de amor pela Elizama.</p>
+        <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
+          <p style="font-size:0.75rem;font-weight:600;margin-bottom:0.3rem;">Itens disponíveis</p>
+          <p style="font-size:0.72rem;color:var(--suave);font-style:italic;">[Solicitar doações de parceiros locais]</p>
+          <p class="nota" style="margin-top:0.4rem;">⚠ Configurar leilão no doare.org</p>
+        </div>
+        <a href="#" class="alt-cta">Ver itens</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTAL DO DOADOR -->
+<section class="portal" id="portal">
+  <div>
+    <p class="section-label">Portal do Doador</p>
+    <h2 class="section-title">Transparência total.<br>Amor verificável.</h2>
+    <p class="section-body">Cada doador tem acesso a um painel personalizado para acompanhar histórico, gerenciar assinaturas e ver o impacto real da contribuição.</p>
+    <ul style="margin-top:1.5rem;list-style:none;display:flex;flex-direction:column;gap:0.75rem;">
+      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Histórico completo de doações</li>
+      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Gestão de doações recorrentes</li>
+      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Atualização de dados de pagamento</li>
+      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Painel de embaixador com métricas</li>
+    </ul>
+  </div>
+  <div class="portal-ui">
+    <div class="ptop"><div class="pdot" style="background:#EF4444;"></div><div class="pdot" style="background:#F59E0B;"></div><div class="pdot" style="background:#10B981;"></div></div>
+    <div class="pcontent">
+      <div class="psidebar">
+        <div class="pnav">Dashboard</div>
+        <div class="pnav active">Minhas doações</div>
+        <div class="pnav">Assinaturas</div>
+        <div class="pnav">Embaixador</div>
+        <div class="pnav">Ajuda</div>
+      </div>
+      <div class="pmain">
+        <p style="font-size:0.72rem;font-weight:600;margin-bottom:0.75rem;">Histórico de doações</p>
+        <div class="prow"><span>Doação via PIX</span><span>R$ —</span><span class="tok">Confirmado</span></div>
+        <div class="prow"><span>Doação mensal</span><span>R$ —</span><span class="tok">Ativo</span></div>
+        <div class="prow"><span>Rifa #—</span><span>R$ —</span><span class="tpend">Aguardando</span></div>
+        <p style="margin-top:1rem;font-size:0.72rem;color:var(--coral);font-weight:600;">→ Acesso via doare.org após configuração</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <div style="position:relative;z-index:1;">
+    <h2 class="section-title">Você é o amor<br>que Elizama precisa.</h2>
+    <p class="section-body" style="color:rgba(255,255,255,0.7);margin:0 auto 2.5rem;">Não existe doação pequena. Existe amor insuficiente — e o seu pode fazer diferença real agora.</p>
+    <div class="cta-btns">
+      <a href="#doe" class="btn-w">Doe agora</a>
+      <a href="#embaixadores" class="btn-gw">Ser embaixador</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fl"><span class="eliz">ELIZ</span><span class="ama">AMA</span></div>
+  <p class="footer-copy">Movimento em Apoio a Elizama · Juntos somos o amor que transforma</p>
+  <div class="footer-links">
+    <a href="#historia">A história</a>
+    <a href="#como-ajudar">Ajudar</a>
+    <a href="https://doare.org" target="_blank">Plataforma: doare.org</a>
+  </div>
+</footer>
+
+<script>
+  /* NAV scroll */
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+  /* SLIDER */
+  const track = document.getElementById('slidesTrack');
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.sdot');
+  const spfill = document.getElementById('spfill');
+  let cur = 0, timer;
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    dots[cur].classList.add('active');
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    // Reinicia barra de progresso
+    spfill.classList.remove('run');
+    void spfill.offsetWidth;
+    spfill.classList.add('run');
+    clearInterval(timer);
+    timer = setInterval(() => goTo(cur + 1), 5000);
+  }
+
+  document.getElementById('sNext').addEventListener('click', () => goTo(cur + 1));
+  document.getElementById('sPrev').addEventListener('click', () => goTo(cur - 1));
+  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
+
+  // Touch swipe
+  let tx = 0;
+  track.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  track.addEventListener('touchend',   e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) goTo(cur + (d > 0 ? 1 : -1)); });
+
+  timer = setInterval(() => goTo(cur + 1), 5000);
+
+  /* FORMULÁRIO */
+  function selAmt(b) { document.querySelectorAll('.abtn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+  function selPay(b) { document.querySelectorAll('.popt').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+  /* Scroll suave */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.getElementById(a.getAttribute('href').slice(1));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+<script src="/donate-integration.js"></script>
+</body>
+</html>

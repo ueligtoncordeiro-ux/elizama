@@ -1,0 +1,12 @@
+{
+  "name": "elizama-doacoes-mp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Integração Mercado Pago (Checkout Pro) para a campanha Elizama",
+  "dependencies": {
+    "mercadopago": "^2.0.15"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
