@@ -1,14 +1,6 @@
-// /api/create-preference.js
-//
-// Recebe { amount, donorName?, donorEmail?, embaixador? } via POST
-// Cria uma Preference no Mercado Pago (Checkout Pro) e retorna init_point
-// para redirecionamento do doador.
-//
-// IMPORTANTE: este endpoint roda no servidor (Vercel Function).
-// O Access Token NUNCA é exposto ao navegador.
-
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { randomUUID } from 'crypto';
+import { registrarDoacaoPendente } from '../lib/supabase.js';
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
@@ -24,7 +16,6 @@ export default async function handler(req, res) {
   try {
     const { amount, donorName, donorEmail, embaixador } = req.body;
 
-    // ── Validação básica ──────────────────────────────
     const valor = Number(amount);
     if (!valor || valor < 5) {
       return res.status(400).json({ error: 'Valor da doação inválido. Mínimo R$ 5,00.' });
@@ -33,12 +24,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Valor acima do limite permitido para este formulário.' });
     }
 
-    // Referência única para rastrear esta doação (usada no webhook)
     const externalReference = randomUUID();
-
-    // ── (Opcional, recomendado) Gravar doação "pendente" no Supabase ──
-    // await registrarDoacaoPendente({ externalReference, valor, donorEmail, embaixador });
-    // Ver supabase-schema.sql + lib/supabase.js neste projeto.
 
     const preference = new Preference(client);
 
@@ -73,10 +59,12 @@ export default async function handler(req, res) {
       },
     });
 
+    await registrarDoacaoPendente({ externalReference, valor, donorName, donorEmail, embaixador });
+
     return res.status(200).json({
       id: result.id,
-      init_point: result.init_point,           // produção
-      sandbox_init_point: result.sandbox_init_point, // testes
+      init_point: result.init_point,
+      sandbox_init_point: result.sandbox_init_point,
       external_reference: externalReference,
     });
 

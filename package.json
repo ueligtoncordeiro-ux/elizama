@@ -4,6 +4,7 @@
   "private": true,
   "description": "Integração Mercado Pago (Checkout Pro) para a campanha Elizama",
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
     "mercadopago": "^2.0.15"
   },
   "engines": {

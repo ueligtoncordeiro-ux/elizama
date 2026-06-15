@@ -1,25 +1,14 @@
-// /api/webhook.js
-//
-// Endpoint chamado pelo Mercado Pago a cada mudança de status de pagamento.
-// Configurar a URL https://SEU_DOMINIO/api/webhook no painel:
-// Suas integrações > [sua aplicação] > Webhooks > Configurar notificações
-//
-// Eventos relevantes: "payment" (criado/atualizado)
-
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import crypto from 'crypto';
+import { atualizarDoacao } from '../lib/supabase.js';
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
 
-// ── Validação de assinatura (x-signature) ──────────────────────────
-// Documentação: https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/additional-content/notifications/webhooks
-// Confirma que a notificação realmente vem do Mercado Pago.
 function validarAssinatura(req) {
   const secret = process.env.MP_WEBHOOK_SECRET;
   if (!secret) {
-    // Sem secret configurado = validação desabilitada (apenas para desenvolvimento)
     console.warn('MP_WEBHOOK_SECRET não configurado — validação de assinatura ignorada.');
     return true;
   }
@@ -42,7 +31,6 @@ function validarAssinatura(req) {
 }
 
 export default async function handler(req, res) {
-  // Mercado Pago espera resposta 200/201 rápida — qualquer outra coisa gera reenvio.
   if (req.method !== 'POST') {
     return res.status(200).send('OK');
   }
@@ -59,27 +47,22 @@ export default async function handler(req, res) {
       const paymentClient = new Payment(client);
       const payment = await paymentClient.get({ id: data.id });
 
-      const status = payment.status;               // approved | pending | rejected | etc.
+      const status = payment.status;
       const valor = payment.transaction_amount;
       const externalRef = payment.external_reference;
-      const embaixador = payment.metadata?.embaixador;
+      const mpPaymentId = String(data.id);
+      const metodo = payment.payment_type_id || null;
+      const embaixador = payment.metadata?.embaixador || null;
 
-      console.log('Pagamento recebido:', { externalRef, status, valor, embaixador });
+      console.log('Pagamento recebido:', { externalRef, status, valor, metodo, embaixador });
 
-      // ── (Opcional, recomendado) Atualizar registro no Supabase ──
-      // await atualizarDoacao({ externalRef, status, valor, mpPaymentId: data.id, embaixador });
-      //
-      // - status === 'approved'  → marcar doação como confirmada, somar à meta
-      // - status === 'pending'   → manter como aguardando (ex.: boleto)
-      // - status === 'rejected'  → marcar como falha
+      await atualizarDoacao({ externalRef, status, valor, mpPaymentId, metodo, embaixador });
     }
 
     return res.status(200).send('OK');
 
   } catch (err) {
     console.error('Erro no webhook MP:', err);
-    // Retornar 200 mesmo em erro evita reenvios infinitos durante debug;
-    // ajuste para 500 quando a persistência estiver implementada e estável.
     return res.status(200).send('OK');
   }
 }
