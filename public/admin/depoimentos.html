@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Depoimentos — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, dataFmt, renderLayout, toast } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+renderLayout('Depoimentos', '<div id="root">Carregando…</div>');
+
+async function carregar() {
+  const d = await api('depoimentos');
+  if (!d) return;
+
+  const pendentes  = d.filter(x => !x.aprovado);
+  const aprovados  = d.filter(x => x.aprovado);
+
+  const row = dep => `
+    <div class="card" style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;margin-bottom:.5rem">
+      <div style="width:44px;height:44px;border-radius:50%;background:#E5E7EB;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+        ${dep.foto_url ? `<img src="${dep.foto_url}" style="width:100%;height:100%;object-fit:cover">` : '👤'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:.9rem">${dep.nome}</div>
+        <div style="font-size:.85rem;color:#374151;margin:.3rem 0;line-height:1.5">"${dep.texto}"</div>
+        <div style="font-size:.72rem;color:#9CA3AF">${dataFmt(dep.criado_em)}</div>
+      </div>
+      <div class="actions" style="flex-shrink:0">
+        ${!dep.aprovado
+          ? `<button class="btn btn-sm btn-success" onclick="aprovar('${dep.id}')">✓ Aprovar</button>`
+          : `<button class="btn btn-sm" style="background:#FEF3C7;color:#92400E" onclick="reprovar('${dep.id}')">Ocultar</button>`}
+        <button class="btn btn-sm btn-primary" onclick='editar(${JSON.stringify(dep).replace(/'/g,"&#39;")})'>Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="excluir('${dep.id}')">✕</button>
+      </div>
+    </div>`;
+
+  document.getElementById('root').innerHTML = `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="abrirModal()">+ Novo Depoimento</button>
+  </div>
+  ${pendentes.length ? `
+    <div style="font-weight:600;font-size:.85rem;color:#92400E;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem">
+      <span style="background:#FEF3C7;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem">${pendentes.length}</span>
+      Aguardando aprovação
+    </div>
+    ${pendentes.map(row).join('')}
+    <div style="margin:1rem 0;border-top:1px solid #E5E7EB"></div>` : ''}
+  <div style="font-weight:600;font-size:.85rem;color:#6B7280;margin-bottom:.5rem">Publicados (${aprovados.length})</div>
+  ${aprovados.length ? aprovados.map(row).join('') : '<div class="empty">Nenhum depoimento aprovado ainda</div>'}
+  <div id="modal"></div>`;
+}
+
+window.aprovar  = async id => { await api('depoimentos','PUT',{id,aprovado:true});  toast('Aprovado!'); carregar(); };
+window.reprovar = async id => { await api('depoimentos','PUT',{id,aprovado:false}); toast('Ocultado!'); carregar(); };
+
+window.abrirModal = (dep = null) => {
+  document.getElementById('modal').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)fecharModal()">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+      <h3>${dep ? 'Editar' : 'Novo'} Depoimento</h3>
+      <input type="hidden" id="m-id" value="${dep?.id||''}">
+      <div class="form-group"><label>Nome *</label><input id="m-nome" value="${dep?.nome||''}"></div>
+      <div class="form-group"><label>Depoimento *</label><textarea id="m-texto" rows="4" style="resize:vertical">${dep?.texto||''}</textarea></div>
+      <div class="form-group"><label>URL da foto (opcional)</label><input id="m-foto" value="${dep?.foto_url||''}"></div>
+      <div class="form-group"><label>Ordem de exibição</label><input id="m-ordem" type="number" value="${dep?.ordem||0}"></div>
+      <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;cursor:pointer">
+        <input type="checkbox" id="m-aprov" ${dep?.aprovado?'checked':''}> Aprovado (visível na landing)
+      </label>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-primary" style="flex:1" onclick="salvar()">Salvar</button>
+        <button class="btn" style="background:#F3F4F6;flex:1" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>`;
+};
+
+window.editar = dep => window.abrirModal(dep);
+window.fecharModal = () => document.getElementById('modal').innerHTML = '';
+
+window.salvar = async () => {
+  const id = document.getElementById('m-id').value;
+  const body = {
+    nome:     document.getElementById('m-nome').value,
+    texto:    document.getElementById('m-texto').value,
+    foto_url: document.getElementById('m-foto').value || null,
+    ordem:    Number(document.getElementById('m-ordem').value),
+    aprovado: document.getElementById('m-aprov').checked,
+    ...(id ? { id } : {})
+  };
+  if (!body.nome || !body.texto) return toast('Nome e texto obrigatórios.', false);
+  const r = await api('depoimentos', id ? 'PUT' : 'POST', body);
+  if (r?.error) return toast(r.error, false);
+  toast('Salvo!'); fecharModal(); carregar();
+};
+
+window.excluir = async id => {
+  if (!confirm('Excluir este depoimento?')) return;
+  await api('depoimentos', 'DELETE', { id });
+  toast('Excluído!'); carregar();
+};
+
+carregar();
+</script>
+</body>
+</html>

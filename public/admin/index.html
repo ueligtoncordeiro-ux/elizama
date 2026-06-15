@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, fmt, dataFmt, badge, renderLayout } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+
+renderLayout('Dashboard', '<div id="root">Carregando…</div>');
+
+const d = await api('dashboard');
+if (!d) throw new Error('api');
+
+const pct = d.meta?.percentual || 0;
+const grafico = (d.doacoes_por_dia || []).map(r => ({ dia: r.dia, val: Number(r.total_valor) }));
+const maxVal = Math.max(...grafico.map(r => r.val), 1);
+
+document.getElementById('root').innerHTML = `
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-val">${fmt(d.meta?.total_arrecadado)}</div>
+    <div class="stat-lbl">Total Arrecadado</div>
+    <div class="progress-bar" style="margin-top:.75rem"><div class="progress-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    <div style="font-size:.72rem;color:#9CA3AF;margin-top:.3rem">${pct}% da meta de ${fmt(d.meta?.meta)}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">${d.meta?.total_doacoes_aprovadas ?? 0}</div>
+    <div class="stat-lbl">Doações Aprovadas</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">${d.por_status?.pending ?? 0}</div>
+    <div class="stat-lbl">Pendentes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">${d.por_status?.rejected ?? 0}</div>
+    <div class="stat-lbl">Recusadas</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:1rem;margin-bottom:1rem">
+  <div class="card">
+    <div class="card-title">Doações — últimos 30 dias</div>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:120px">
+      ${grafico.length ? grafico.map(r => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px" title="${r.dia}: ${fmt(r.val)}">
+          <div style="flex:1;width:100%;display:flex;align-items:flex-end">
+            <div style="width:100%;height:${Math.round((r.val/maxVal)*100)}%;background:linear-gradient(to top,#1A3560,#4A7FC1);border-radius:4px 4px 0 0;min-height:3px"></div>
+          </div>
+        </div>`).join('') : '<div class="empty" style="width:100%">Sem dados ainda</div>'}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.65rem;color:#9CA3AF;margin-top:.4rem">
+      <span>${grafico[0]?.dia || ''}</span><span>${grafico[grafico.length-1]?.dia || ''}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Top Embaixadores</div>
+    ${d.top_embaixadores?.length ? d.top_embaixadores.map((e,i) => `
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+        <div style="width:22px;height:22px;border-radius:50%;background:#1A3560;color:white;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.nome}</div>
+          <div style="font-size:.72rem;color:#9CA3AF">${fmt(e.total_arrecadado)}</div>
+        </div>
+      </div>`).join('') : '<div class="empty">Nenhum embaixador ainda</div>'}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Últimas doações</div>
+  <table>
+    <thead><tr><th>Data</th><th>Doador</th><th>Valor</th><th>Método</th><th>Embaixador</th><th>Status</th></tr></thead>
+    <tbody>
+      ${d.recentes?.length ? d.recentes.map(r => `
+        <tr>
+          <td style="color:#6B7280;font-size:.8rem">${dataFmt(r.criado_em)}</td>
+          <td>${r.doador_nome || '<span style="color:#9CA3AF">Anônimo</span>'}</td>
+          <td style="font-weight:600">${fmt(r.valor)}</td>
+          <td style="color:#6B7280;font-size:.8rem">${r.metodo || '—'}</td>
+          <td style="color:#6B7280;font-size:.8rem">${r.embaixador || '—'}</td>
+          <td>${badge(r.status)}</td>
+        </tr>`).join('') : '<tr><td colspan="6" class="empty">Nenhuma doação ainda</td></tr>'}
+    </tbody>
+  </table>
+</div>`;
+</script>
+</body>
+</html>

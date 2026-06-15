@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slides — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, renderLayout, toast } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+renderLayout('Slides do Hero', '<div id="root">Carregando…</div>');
+
+async function carregar() {
+  const d = await api('slides');
+  if (!d) return;
+  document.getElementById('root').innerHTML = `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="abrirModal()">+ Novo Slide</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:.75rem">
+    ${d.length ? d.map(s => `
+      <div class="card" style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem">
+        <div style="width:64px;height:48px;border-radius:8px;background:${s.cor_fundo};flex-shrink:0;overflow:hidden">
+          ${s.foto_url ? `<img src="${s.foto_url}" style="width:100%;height:100%;object-fit:cover">` : ''}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.9rem">${s.titulo}</div>
+          <div style="font-size:.78rem;color:#9CA3AF;margin-top:2px">${s.kicker || ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <span style="font-size:.75rem;background:${s.ativo?'#D1FAE5':'#F3F4F6'};color:${s.ativo?'#065F46':'#6B7280'};padding:2px 10px;border-radius:100px;font-weight:600">${s.ativo?'Ativo':'Oculto'}</span>
+          <button class="btn btn-sm" style="background:#F3F4F6" onclick="toggleAtivo('${s.id}',${s.ativo})">${s.ativo?'Ocultar':'Ativar'}</button>
+          <button class="btn btn-sm btn-primary" onclick='editar(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="excluir('${s.id}')">✕</button>
+        </div>
+      </div>`).join('') : '<div class="empty card">Nenhum slide cadastrado</div>'}
+  </div>
+  <div id="modal"></div>`;
+}
+
+window.toggleAtivo = async (id, atual) => {
+  await api('slides', 'PUT', { id, ativo: !atual });
+  toast(!atual ? 'Slide ativado!' : 'Slide ocultado!'); carregar();
+};
+
+window.abrirModal = (s = null) => {
+  document.getElementById('modal').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)fecharModal()">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+      <h3>${s ? 'Editar' : 'Novo'} Slide</h3>
+      <input type="hidden" id="m-id" value="${s?.id||''}">
+      <div class="form-group"><label>Kicker (texto acima do título)</label><input id="m-kicker" value="${s?.kicker||''}"></div>
+      <div class="form-group"><label>Título *</label><input id="m-titulo" value="${s?.titulo||''}"></div>
+      <div class="form-group"><label>Texto</label><textarea id="m-texto" rows="2" style="resize:vertical">${s?.texto||''}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="form-group"><label>Botão 1 texto</label><input id="m-b1t" value="${s?.btn1_texto||''}"></div>
+        <div class="form-group"><label>Botão 1 link</label><input id="m-b1l" value="${s?.btn1_link||''}"></div>
+        <div class="form-group"><label>Botão 2 texto</label><input id="m-b2t" value="${s?.btn2_texto||''}"></div>
+        <div class="form-group"><label>Botão 2 link</label><input id="m-b2l" value="${s?.btn2_link||''}"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="form-group"><label>Cor de fundo</label><input id="m-cor" type="color" value="${s?.cor_fundo||'#1a3560'}" style="height:42px;padding:4px"></div>
+        <div class="form-group"><label>Ordem</label><input id="m-ordem" type="number" value="${s?.ordem||0}"></div>
+      </div>
+      <div class="form-group"><label>URL da foto</label><input id="m-foto" value="${s?.foto_url||''}" placeholder="https://...">
+        <div style="margin-top:.4rem"><input type="file" id="m-file" accept="image/*" onchange="previewFoto(this)"></div>
+        <div id="m-preview" style="margin-top:.5rem">${s?.foto_url?`<img src="${s.foto_url}" style="max-height:80px;border-radius:8px">`:''}</div>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:1rem">
+        <button class="btn btn-primary" style="flex:1" onclick="salvar()">Salvar</button>
+        <button class="btn" style="background:#F3F4F6;flex:1" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>`;
+};
+
+window.previewFoto = async (input) => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    document.getElementById('m-preview').innerHTML = `<img src="${e.target.result}" style="max-height:80px;border-radius:8px">`;
+    const up = await api('upload', 'POST', { nome: file.name, tipo: file.type, dados_base64: e.target.result });
+    if (up?.url) { document.getElementById('m-foto').value = up.url; toast('Foto enviada!'); }
+    else toast('Erro no upload', false);
+  };
+  reader.readAsDataURL(file);
+};
+
+window.editar = s => window.abrirModal(s);
+window.fecharModal = () => document.getElementById('modal').innerHTML = '';
+
+window.salvar = async () => {
+  const id = document.getElementById('m-id').value;
+  const body = {
+    kicker: document.getElementById('m-kicker').value,
+    titulo: document.getElementById('m-titulo').value,
+    texto:  document.getElementById('m-texto').value,
+    btn1_texto: document.getElementById('m-b1t').value,
+    btn1_link:  document.getElementById('m-b1l').value,
+    btn2_texto: document.getElementById('m-b2t').value,
+    btn2_link:  document.getElementById('m-b2l').value,
+    cor_fundo:  document.getElementById('m-cor').value,
+    ordem:      Number(document.getElementById('m-ordem').value),
+    foto_url:   document.getElementById('m-foto').value || null,
+    ...(id ? { id } : {})
+  };
+  if (!body.titulo) return toast('Título obrigatório.', false);
+  const r = await api('slides', id ? 'PUT' : 'POST', body);
+  if (r?.error) return toast(r.error, false);
+  toast('Slide salvo!'); fecharModal(); carregar();
+};
+
+window.excluir = async id => {
+  if (!confirm('Excluir este slide?')) return;
+  await api('slides', 'DELETE', { id });
+  toast('Excluído!'); carregar();
+};
+
+carregar();
+</script>
+</body>
+</html>

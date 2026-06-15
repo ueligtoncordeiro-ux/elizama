@@ -385,20 +385,20 @@
 <!-- INFO BAR -->
 <div class="hero-infobar">
   <div class="infobar-item">
-    <span class="infobar-num nc">R$ —</span>
+    <span class="infobar-num nc" id="stat-arrecadado">R$ —</span>
     <span class="infobar-label">Arrecadado</span>
-    <div class="infobar-progress"><div class="infobar-fill"></div></div>
+    <div class="infobar-progress"><div class="infobar-fill" id="infobar-fill"></div></div>
   </div>
   <div class="infobar-item">
-    <span class="infobar-num na">—</span>
+    <span class="infobar-num na" id="stat-doadores">—</span>
     <span class="infobar-label">Doadores</span>
   </div>
   <div class="infobar-item">
-    <span class="infobar-num">—</span>
+    <span class="infobar-num" id="stat-embaixadores">—</span>
     <span class="infobar-label">Embaixadores ativos</span>
   </div>
   <div class="infobar-item">
-    <span class="infobar-num">—</span>
+    <span class="infobar-num" id="stat-dias">—</span>
     <span class="infobar-label">Dias de campanha</span>
   </div>
 </div>
@@ -412,8 +412,8 @@
   <div>
     <p class="section-label">A história</p>
     <h2 class="section-title">Quem é Elizama?</h2>
-    <p class="section-body">[Narrativa pessoal de Elizama — inserir após confirmar o que ela autoriza compartilhar sobre diagnóstico, trajetória e necessidade.]</p>
-    <blockquote class="historia-quote">"Eu amo, tu amas — e juntos, somos o amor que ela precisa agora."</blockquote>
+    <p class="section-body" id="historia-corpo">[Narrativa pessoal de Elizama — inserir após confirmar o que ela autoriza compartilhar sobre diagnóstico, trajetória e necessidade.]</p>
+    <blockquote class="historia-quote" id="historia-citacao">"Eu amo, tu amas — e juntos, somos o amor que ela precisa agora."</blockquote>
     <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
       <a href="#doe" class="btn-p">Apoiar Elizama</a>
       <a href="#como-ajudar" class="btn-s">Ver formas de ajuda</a>
@@ -493,13 +493,13 @@
     <div style="margin-top:2rem;"><a href="#doe" class="btn-p">Contribuir agora</a></div>
   </div>
   <div class="meta-card">
-    <p class="meta-valor">R$ —</p>
-    <p class="meta-de">arrecadado de R$ — · <strong>—%</strong></p>
-    <div class="meta-bar"><div class="meta-fill" style="animation: pIn2 1.4s 0.3s ease-out forwards;"></div></div>
+    <p class="meta-valor" id="meta-valor">R$ —</p>
+    <p class="meta-de" id="meta-de">arrecadado de R$ — · <strong>—%</strong></p>
+    <div class="meta-bar"><div class="meta-fill" id="meta-fill" style="width:0%;"></div></div>
     <div class="meta-stats">
-      <div class="mstat"><span class="mstat-n">—</span><span class="mstat-l">Doadores</span></div>
-      <div class="mstat"><span class="mstat-n">—</span><span class="mstat-l">Dias restantes</span></div>
-      <div class="mstat"><span class="mstat-n">—%</span><span class="mstat-l">Concluído</span></div>
+      <div class="mstat"><span class="mstat-n" id="mstat-doadores">—</span><span class="mstat-l">Doadores</span></div>
+      <div class="mstat"><span class="mstat-n" id="mstat-dias">—</span><span class="mstat-l">Dias restantes</span></div>
+      <div class="mstat"><span class="mstat-n" id="mstat-pct">—%</span><span class="mstat-l">Concluído</span></div>
     </div>
     <div class="apoiadores">
       <div class="aavatar">A</div><div class="aavatar">B</div><div class="aavatar">C</div><div class="aavatar">+</div>
@@ -698,5 +698,6 @@
   });
 </script>
 <script src="/donate-integration.js"></script>
+<script src="/data-loader.js"></script>
 </body>
 </html>

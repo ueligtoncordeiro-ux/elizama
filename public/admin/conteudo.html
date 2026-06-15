@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conteúdo — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, renderLayout, toast } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+renderLayout('Conteúdo & Configurações', '<div id="root">Carregando…</div>');
+
+async function carregar() {
+  const d = await api('conteudo');
+  if (!d) return;
+
+  const secoes = {};
+  (d.conteudo || []).forEach(c => {
+    if (!secoes[c.secao]) secoes[c.secao] = [];
+    secoes[c.secao].push(c);
+  });
+
+  const cfgHtml = (d.configuracoes || []).map(c => `
+    <div class="form-group" data-tipo="configuracao" data-chave="${c.chave}">
+      <label>${c.descricao || c.chave}</label>
+      <input class="cfg-input" value="${c.valor || ''}" data-chave="${c.chave}" data-tipo="configuracao">
+    </div>`).join('');
+
+  const secHtml = Object.entries(secoes).map(([secao, items]) => `
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">${secao}</div>
+      ${items.map(c => `
+        <div class="form-group" data-chave="${c.chave}">
+          <label>${c.chave.replace(/_/g,' ')}</label>
+          ${c.corpo !== null ? `<textarea class="cnt-input" rows="3" data-chave="${c.chave}" style="resize:vertical">${c.corpo || ''}</textarea>` : ''}
+          ${c.titulo !== null && c.chave.includes('titulo') ? `<input class="cnt-titulo" value="${c.titulo || ''}" data-chave="${c.chave}" placeholder="Título">` : ''}
+        </div>`).join('')}
+    </div>`).join('');
+
+  document.getElementById('root').innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start">
+    <div>
+      <div class="card">
+        <div class="card-title">Configurações Gerais</div>
+        ${cfgHtml}
+        <button class="btn btn-primary" onclick="salvarConfigs()">Salvar Configurações</button>
+      </div>
+    </div>
+    <div>
+      ${secHtml}
+      <button class="btn btn-primary" style="width:100%" onclick="salvarConteudo()">Salvar Conteúdo</button>
+    </div>
+  </div>`;
+}
+
+window.salvarConfigs = async () => {
+  const inputs = document.querySelectorAll('.cfg-input');
+  const erros = [];
+  for (const input of inputs) {
+    const r = await api('conteudo', 'PUT', { tipo: 'configuracao', chave: input.dataset.chave, valor: input.value });
+    if (r?.error) erros.push(r.error);
+  }
+  erros.length ? toast('Erro: ' + erros[0], false) : toast('Configurações salvas!');
+};
+
+window.salvarConteudo = async () => {
+  const inputs = document.querySelectorAll('.cnt-input, .cnt-titulo');
+  const erros = [];
+  for (const input of inputs) {
+    const campo = input.classList.contains('cnt-titulo') ? { titulo: input.value } : { corpo: input.value };
+    const r = await api('conteudo', 'PUT', { tipo: 'conteudo', chave: input.dataset.chave, ...campo });
+    if (r?.error) erros.push(r.error);
+  }
+  erros.length ? toast('Erro: ' + erros[0], false) : toast('Conteúdo salvo!');
+};
+
+carregar();
+</script>
+</body>
+</html>

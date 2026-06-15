@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doações — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, fmt, dataFmt, badge, renderLayout, toast } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+
+renderLayout('Doações', '<div id="root">Carregando…</div>');
+
+let pagina = 1, filtros = {};
+
+async function carregar() {
+  const qs = new URLSearchParams({ pagina, por_pagina: 50, ...filtros }).toString();
+  const d = await api('doacoes', 'GET', null, '&' + qs);
+  if (!d) return;
+
+  document.getElementById('root').innerHTML = `
+  <div class="search-bar">
+    <input id="f-status" placeholder="Status (approved/pending/rejected)" value="${filtros.status||''}">
+    <input id="f-emb" placeholder="Embaixador (slug)" value="${filtros.embaixador||''}">
+    <input id="f-de" type="date" value="${filtros.de||''}">
+    <input id="f-ate" type="date" value="${filtros.ate||''}">
+    <button class="btn btn-primary" onclick="filtrar()">Filtrar</button>
+    <button class="btn" style="background:#F3F4F6" onclick="limpar()">Limpar</button>
+    <button class="btn" style="background:#F3F4F6;margin-left:auto" onclick="exportar()">⬇ CSV</button>
+  </div>
+  <div class="card" style="padding:0">
+    <table>
+      <thead><tr><th>Data</th><th>Doador</th><th>Email</th><th>Valor</th><th>Método</th><th>Embaixador</th><th>Status</th></tr></thead>
+      <tbody>
+        ${d.data?.length ? d.data.map(r => `
+          <tr>
+            <td style="color:#6B7280;font-size:.8rem;white-space:nowrap">${dataFmt(r.criado_em)}</td>
+            <td style="font-weight:500">${r.doador_nome || '<span style="color:#9CA3AF">Anônimo</span>'}</td>
+            <td style="color:#6B7280;font-size:.8rem">${r.doador_email || '—'}</td>
+            <td style="font-weight:600;color:#1A3560">${fmt(r.valor)}</td>
+            <td style="color:#6B7280;font-size:.8rem">${r.metodo || '—'}</td>
+            <td style="color:#6B7280;font-size:.8rem">${r.embaixador || '—'}</td>
+            <td>${badge(r.status)}</td>
+          </tr>`).join('') : '<tr><td colspan="7" class="empty">Nenhuma doação encontrada</td></tr>'}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pag"></div>
+  <div style="text-align:center;font-size:.8rem;color:#9CA3AF;margin-top:.5rem">
+    Total: <strong>${d.total}</strong> doações
+  </div>`;
+
+  // Paginação
+  const totalPag = Math.ceil(d.total / 50);
+  const pag = document.getElementById('pag');
+  for (let i = 1; i <= totalPag; i++) {
+    const b = document.createElement('button');
+    b.textContent = i;
+    if (i === pagina) b.classList.add('active');
+    b.onclick = () => { pagina = i; carregar(); };
+    pag.appendChild(b);
+  }
+}
+
+window.filtrar = () => {
+  filtros = {
+    status:     document.getElementById('f-status').value || undefined,
+    embaixador: document.getElementById('f-emb').value || undefined,
+    de:         document.getElementById('f-de').value || undefined,
+    ate:        document.getElementById('f-ate').value || undefined,
+  };
+  Object.keys(filtros).forEach(k => !filtros[k] && delete filtros[k]);
+  pagina = 1; carregar();
+};
+
+window.limpar = () => { filtros = {}; pagina = 1; carregar(); };
+
+window.exportar = async () => {
+  const d = await api('doacoes', 'GET', null, '&por_pagina=9999');
+  if (!d?.data) return;
+  const header = 'Data,Doador,Email,Valor,Metodo,Embaixador,Status';
+  const rows = d.data.map(r =>
+    [dataFmt(r.criado_em), r.doador_nome||'', r.doador_email||'', r.valor, r.metodo||'', r.embaixador||'', r.status].join(',')
+  );
+  const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/csv' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'doacoes-elizama.csv' });
+  a.click();
+  toast('CSV exportado!');
+};
+
+carregar();
+</script>
+</body>
+</html>

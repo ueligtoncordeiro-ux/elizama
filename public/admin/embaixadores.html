@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Embaixadores — Admin Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script type="module">
+import { guardAuth, api, fmt, renderLayout, toast } from './_admin.js';
+if (!guardAuth()) throw new Error('unauth');
+renderLayout('Embaixadores', '<div id="root">Carregando…</div>');
+
+async function carregar() {
+  const d = await api('embaixadores');
+  if (!d) return;
+  document.getElementById('root').innerHTML = `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="abrirModal()">+ Novo Embaixador</button>
+  </div>
+  <div class="card" style="padding:0">
+    <table>
+      <thead><tr><th>Nome</th><th>Slug / Link</th><th>Arrecadado</th><th>Doações</th><th>Ações</th></tr></thead>
+      <tbody>
+        ${d.length ? d.map(e => `
+          <tr>
+            <td style="font-weight:600">${e.nome}</td>
+            <td>
+              <code style="font-size:.8rem;background:#F3F4F6;padding:2px 6px;border-radius:4px">?emb=${e.slug}</code>
+              <button class="btn btn-sm" style="background:#F3F4F6;margin-left:.4rem" onclick="copiar('${e.slug}')">📋</button>
+            </td>
+            <td style="font-weight:600;color:#1A3560">${fmt(e.total_arrecadado)}</td>
+            <td>${e.total_doacoes}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-primary" onclick='editar(${JSON.stringify(e)})'>Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="excluir('${e.id}','${e.nome}')">Excluir</button>
+            </td>
+          </tr>`).join('') : '<tr><td colspan="5" class="empty">Nenhum embaixador cadastrado</td></tr>'}
+      </tbody>
+    </table>
+  </div>
+  <div id="modal"></div>`;
+}
+
+window.copiar = slug => {
+  navigator.clipboard.writeText(`${location.origin}/?emb=${slug}`);
+  toast('Link copiado!');
+};
+
+window.abrirModal = (e = null) => {
+  document.getElementById('modal').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)fecharModal()">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+      <h3>${e ? 'Editar' : 'Novo'} Embaixador</h3>
+      <input type="hidden" id="m-id" value="${e?.id||''}">
+      <div class="form-group"><label>Nome *</label><input id="m-nome" value="${e?.nome||''}"></div>
+      <div class="form-group"><label>Slug (sem espaços, ex: joao-silva) *</label><input id="m-slug" value="${e?.slug||''}" ${e?'readonly':''}></div>
+      <div class="form-group"><label>Meta individual (R$)</label><input id="m-meta" type="number" value="${e?.meta_propria||''}"></div>
+      <div style="display:flex;gap:.75rem;margin-top:1rem">
+        <button class="btn btn-primary" style="flex:1" onclick="salvar()">Salvar</button>
+        <button class="btn" style="background:#F3F4F6;flex:1" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>`;
+};
+
+window.editar = e => window.abrirModal(e);
+window.fecharModal = () => document.getElementById('modal').innerHTML = '';
+
+window.salvar = async () => {
+  const id = document.getElementById('m-id').value;
+  const body = {
+    nome: document.getElementById('m-nome').value,
+    slug: document.getElementById('m-slug').value,
+    meta_propria: document.getElementById('m-meta').value || null,
+    ...(id ? { id } : {})
+  };
+  if (!body.nome || !body.slug) return toast('Nome e slug obrigatórios.', false);
+  const r = await api('embaixadores', id ? 'PUT' : 'POST', body);
+  if (r?.error) return toast(r.error, false);
+  toast(id ? 'Embaixador atualizado!' : 'Embaixador criado!');
+  fecharModal(); carregar();
+};
+
+window.excluir = async (id, nome) => {
+  if (!confirm(`Excluir embaixador "${nome}"?`)) return;
+  const r = await api('embaixadores', 'DELETE', { id });
+  if (r?.error) return toast(r.error, false);
+  toast('Excluído!'); carregar();
+};
+
+carregar();
+</script>
+</body>
+</html>

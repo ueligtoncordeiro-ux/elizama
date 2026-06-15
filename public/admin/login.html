@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Elizama</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#1A3560 0%,#0f2340 50%,#7B1E1A 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;}
+  .card{background:white;border-radius:24px;padding:2.5rem;width:min(400px,94vw);box-shadow:0 24px 80px rgba(0,0,0,0.3)}
+  .logo{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:#1A3560;text-align:center;margin-bottom:0.25rem}
+  .logo span{color:#C0392B}
+  .sub{text-align:center;font-size:0.85rem;color:#9CA3AF;margin-bottom:2rem}
+  label{font-size:0.8rem;font-weight:600;color:#374151;margin-bottom:0.3rem;display:block}
+  input{width:100%;padding:0.75rem 1rem;border:1.5px solid #E5E7EB;border-radius:10px;font-size:0.9rem;font-family:inherit;outline:none;transition:border .15s;margin-bottom:1rem}
+  input:focus{border-color:#1A3560}
+  button{width:100%;padding:0.85rem;background:#1A3560;color:white;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background .15s;font-family:inherit}
+  button:hover{background:#0f2340}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  .erro{background:#FEE2E2;color:#991B1B;padding:0.6rem 0.85rem;border-radius:8px;font-size:0.85rem;margin-bottom:1rem;display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">ELIZ<span>AMA</span></div>
+  <div class="sub">Painel de Administração</div>
+  <div class="erro" id="erro"></div>
+  <label>E-mail</label>
+  <input type="email" id="email" placeholder="admin@elizama.com" autocomplete="username">
+  <label>Senha</label>
+  <input type="password" id="senha" placeholder="••••••••" autocomplete="current-password">
+  <button id="btn" onclick="login()">Entrar</button>
+</div>
+<script type="module">
+  // Redirecionar se já logado
+  if (sessionStorage.getItem('elizama_token')) window.location.href = '/admin/';
+
+  window.login = async function() {
+    const btn = document.getElementById('btn');
+    const erro = document.getElementById('erro');
+    erro.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Entrando…';
+    try {
+      const r = await fetch('/api/admin?mod=login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email: document.getElementById('email').value, senha: document.getElementById('senha').value })
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Erro ao entrar.');
+      sessionStorage.setItem('elizama_token', d.token);
+      window.location.href = '/admin/';
+    } catch(e) {
+      erro.textContent = e.message; erro.style.display='block';
+      btn.disabled=false; btn.textContent='Entrar';
+    }
+  };
+
+  document.getElementById('senha').addEventListener('keydown', e => { if(e.key==='Enter') window.login(); });
+</script>
+</body>
+</html>
