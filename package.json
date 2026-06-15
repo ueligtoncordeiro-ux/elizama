@@ -2,6 +2,7 @@
   "name": "elizama-doacoes-mp",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Integração Mercado Pago (Checkout Pro) para a campanha Elizama",
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
