@@ -319,7 +319,7 @@
           <h1 class="slide-title">Eu amo,<br>tu amas,<br><span class="t-coral">ELIZAMA.</span></h1>
           <p class="slide-text">Uma comunidade unida em torno de uma pessoa especial. Cada ato de amor transforma a jornada dela.</p>
           <div class="slide-ctas">
-            <a href="#doe" class="btn-sp">Quero doe agora</a>
+            <a href="#doe" class="btn-sp">Quero doar agora</a>
             <a href="#historia" class="btn-sg">Conhecer a história</a>
           </div>
         </div>
@@ -453,7 +453,7 @@
     <p class="section-body" style="max-width:500px;margin:0 auto;">Há muitos caminhos para o amor se manifestar. Escolha o que faz mais sentido para você.</p>
   </div>
   <div class="ajudar-grid">
-    <a href="#doe" class="ajudar-card"><div class="card-icon ic">💳</div><p class="card-title">Doação Direta</p><p class="card-desc">PIX, cartão, boleto ou PayPal. Rápido e seguro via doare.org.</p><span class="card-link">Doe agora →</span></a>
+    <a href="#doe" class="ajudar-card"><div class="card-icon ic">💳</div><p class="card-title">Doação Direta</p><p class="card-desc">PIX, cartão de crédito ou boleto. Rápido e seguro via Mercado Pago.</p><span class="card-link">Doe agora →</span></a>
     <a href="#crowdfunding" class="ajudar-card"><div class="card-icon ia">🎯</div><p class="card-title">Crowdfunding</p><p class="card-desc">Acompanhe a meta coletiva em tempo real. Recebimento flexível.</p><span class="card-link">Ver a meta →</span></a>
     <a href="#embaixadores" class="ajudar-card"><div class="card-icon ic">📣</div><p class="card-title">Seja Embaixador</p><p class="card-desc">Crie seu link e arrecade dentro da sua rede — P2P exponencial.</p><span class="card-link">Ser embaixador →</span></a>
     <a href="#rifa" class="ajudar-card"><div class="card-icon ia">🎟️</div><p class="card-title">Rifa Solidária</p><p class="card-desc">Concorra a prêmios e ajude ao mesmo tempo. Transparente.</p><span class="card-link">Participar →</span></a>
@@ -466,11 +466,11 @@
 <section class="doe-section" id="doe">
   <div>
     <p class="section-label">Formulário de Doação</p>
-    <h2 class="section-title">Doe agora.<br>Sem sair desta página.</h2>
-    <p class="section-body">Ambiente seguro integrado ao doare.org. Escolha o valor e a forma — a confirmação é imediata.</p>
+    <h2 class="section-title">Doe agora.<br>Rápido e seguro.</h2>
+    <p class="section-body">Pagamento processado pelo Mercado Pago. Escolha o valor, clique e seja redirecionado para o checkout seguro.</p>
     <ul style="margin-top:1.5rem;list-style:none;display:flex;flex-direction:column;gap:0.6rem;">
-      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> PIX, cartão, boleto, PayPal, PicPay</li>
-      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Doação recorrente mensal</li>
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> PIX, cartão de crédito e boleto bancário</li>
+      <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Checkout seguro via Mercado Pago</li>
       <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Confirmação imediata por e-mail</li>
       <li style="display:flex;gap:0.6rem;font-size:0.88rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Transparência total no uso dos recursos</li>
     </ul>
@@ -489,10 +489,8 @@
     <p class="dlabel" style="margin-top:0.25rem;">Forma de pagamento</p>
     <div class="popts">
       <button class="popt active" onclick="selPay(this)">PIX</button>
-      <button class="popt" onclick="selPay(this)">Cartão</button>
+      <button class="popt" onclick="selPay(this)">Cartão de crédito</button>
       <button class="popt" onclick="selPay(this)">Boleto</button>
-      <button class="popt" onclick="selPay(this)">PayPal</button>
-      <button class="popt" onclick="selPay(this)">PicPay</button>
     </div>
     <div class="rec-toggle" onclick="this.querySelector('.tgl').classList.toggle('on')">
       <div class="tgl"></div>
@@ -501,9 +499,8 @@
     <button class="btn-doe-card" onclick="doareRedir()">Doe agora — com amor</button>
     <div class="secure-b">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Ambiente seguro · via doare.org
+      Ambiente seguro · Mercado Pago
     </div>
-    <p class="nota">⚠ Substituir pelo widget embed do doare.org após configurar a campanha.</p>
   </div>
 </section>
 
@@ -513,7 +510,6 @@
     <p class="section-label">Meta coletiva</p>
     <h2 class="section-title">Cada real conta.<br>Cada amor soma.</h2>
     <p class="section-body">Acompanhe a meta em tempo real. Cada doação é visível e verificável.</p>
-    <p class="nota" style="max-width:460px;">⚠ Definir valor da meta após confirmação com Elizama e o grupo organizador.</p>
     <div style="margin-top:2rem;"><a href="#doe" class="btn-p">Contribuir agora</a></div>
   </div>
   <div class="meta-card">
@@ -540,9 +536,9 @@
       <h2 class="section-title">Multiplique o amor<br>pela sua rede</h2>
       <p class="section-body">Crie seu link e arrecade para a campanha da Elizama dentro da sua rede. Cada novo doador que você trouxer é um ato concreto de amor.</p>
       <div class="emb-steps">
-        <div class="emb-step"><div class="emb-num">1</div><div><p class="est-t">Cadastre-se como embaixador</p><p class="est-d">Crie seu perfil gratuito integrado à campanha no doare.org.</p></div></div>
-        <div class="emb-step"><div class="emb-num">2</div><div><p class="est-t">Compartilhe seu link único</p><p class="est-d">Cada doação pelo seu link é registrada e atribuída a você.</p></div></div>
-        <div class="emb-step"><div class="emb-num">3</div><div><p class="est-t">Acompanhe seu impacto</p><p class="est-d">Veja em tempo real quanto você ajudou a arrecadar.</p></div></div>
+        <div class="emb-step"><div class="emb-num">1</div><div><p class="est-t">Cadastre-se como embaixador</p><p class="est-d">Entre em contato pelo WhatsApp e receba seu link personalizado da campanha.</p></div></div>
+        <div class="emb-step"><div class="emb-num">2</div><div><p class="est-t">Compartilhe seu link único</p><p class="est-d">Cada doação feita pelo seu link é registrada e atribuída a você automaticamente.</p></div></div>
+        <div class="emb-step"><div class="emb-num">3</div><div><p class="est-t">Acompanhe seu impacto</p><p class="est-d">Veja em tempo real quanto você ajudou a arrecadar para a Elizama.</p></div></div>
       </div>
       <div style="margin-top:2rem;"><a href="#" class="btn-p">Quero ser embaixador</a></div>
     </div>
@@ -555,7 +551,7 @@
       <p style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;margin:0.25rem 0;">R$ —</p>
       <div class="emb-mb"><div class="emb-mf"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--suave);"><span>Meta: R$ —</span><span>—%</span></div>
-      <div style="margin-top:1rem;font-size:0.72rem;color:var(--suave);background:white;border-radius:8px;padding:0.5rem 0.75rem;border:1px solid var(--borda);">🔗 doare.org/elizama?emb=<strong>seulink</strong></div>
+      <div style="margin-top:1rem;font-size:0.72rem;color:var(--suave);background:white;border-radius:8px;padding:0.5rem 0.75rem;border:1px solid var(--borda);">🔗 elizama-pied.vercel.app?emb=<strong>seulink</strong></div>
       <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
         <span style="font-size:0.72rem;background:var(--azul-light);color:var(--azul);border-radius:6px;padding:0.25rem 0.6rem;font-weight:600;">📋 Copiar link</span>
         <span style="font-size:0.72rem;background:#F0FFF4;color:#16A34A;border-radius:6px;padding:0.25rem 0.6rem;font-weight:600;">💬 WhatsApp</span>
@@ -581,7 +577,6 @@
         <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
           <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.4rem;"><span style="font-weight:600;">Bilhetes vendidos</span><span style="color:var(--coral);font-weight:600;">— / —</span></div>
           <div style="height:4px;background:var(--borda);border-radius:100px;"></div>
-          <p class="nota" style="margin-top:0.4rem;">⚠ Configurar rifa no doare.org</p>
         </div>
         <a href="#" class="alt-cta">Participar do sorteio</a>
       </div>
@@ -594,7 +589,6 @@
         <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
           <p style="font-size:0.75rem;font-weight:600;margin-bottom:0.3rem;">Próximos eventos</p>
           <p style="font-size:0.72rem;color:var(--suave);font-style:italic;">[A definir — inserir data e local]</p>
-          <p class="nota" style="margin-top:0.4rem;">⚠ Criar evento no doare.org</p>
         </div>
         <a href="#" class="alt-cta">Inscrever-se</a>
       </div>
@@ -607,7 +601,6 @@
         <div style="background:var(--off-white);border-radius:10px;padding:0.75rem;margin-top:0.4rem;">
           <p style="font-size:0.75rem;font-weight:600;margin-bottom:0.3rem;">Itens disponíveis</p>
           <p style="font-size:0.72rem;color:var(--suave);font-style:italic;">[Solicitar doações de parceiros locais]</p>
-          <p class="nota" style="margin-top:0.4rem;">⚠ Configurar leilão no doare.org</p>
         </div>
         <a href="#" class="alt-cta">Ver itens</a>
       </div>
@@ -615,39 +608,6 @@
   </div>
 </section>
 
-<!-- PORTAL DO DOADOR -->
-<section class="portal" id="portal">
-  <div>
-    <p class="section-label">Portal do Doador</p>
-    <h2 class="section-title">Transparência total.<br>Amor verificável.</h2>
-    <p class="section-body">Cada doador tem acesso a um painel personalizado para acompanhar histórico, gerenciar assinaturas e ver o impacto real da contribuição.</p>
-    <ul style="margin-top:1.5rem;list-style:none;display:flex;flex-direction:column;gap:0.75rem;">
-      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Histórico completo de doações</li>
-      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Gestão de doações recorrentes</li>
-      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Atualização de dados de pagamento</li>
-      <li style="display:flex;gap:0.75rem;font-size:0.9rem;color:var(--suave);"><span style="color:var(--azul);font-weight:700;">✓</span> Painel de embaixador com métricas</li>
-    </ul>
-  </div>
-  <div class="portal-ui">
-    <div class="ptop"><div class="pdot" style="background:#EF4444;"></div><div class="pdot" style="background:#F59E0B;"></div><div class="pdot" style="background:#10B981;"></div></div>
-    <div class="pcontent">
-      <div class="psidebar">
-        <div class="pnav">Dashboard</div>
-        <div class="pnav active">Minhas doações</div>
-        <div class="pnav">Assinaturas</div>
-        <div class="pnav">Embaixador</div>
-        <div class="pnav">Ajuda</div>
-      </div>
-      <div class="pmain">
-        <p style="font-size:0.72rem;font-weight:600;margin-bottom:0.75rem;">Histórico de doações</p>
-        <div class="prow"><span>Doação via PIX</span><span>R$ —</span><span class="tok">Confirmado</span></div>
-        <div class="prow"><span>Doação mensal</span><span>R$ —</span><span class="tok">Ativo</span></div>
-        <div class="prow"><span>Rifa #—</span><span>R$ —</span><span class="tpend">Aguardando</span></div>
-        <p style="margin-top:1rem;font-size:0.72rem;color:var(--coral);font-weight:600;">→ Acesso via doare.org após configuração</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- CTA FINAL -->
 <section class="cta-final">
@@ -668,7 +628,7 @@
   <div class="footer-links">
     <a href="#historia">A história</a>
     <a href="#como-ajudar">Ajudar</a>
-    <a href="https://doare.org" target="_blank">Plataforma: doare.org</a>
+    <a href="#doe">Doar agora</a>
   </div>
 </footer>
 
