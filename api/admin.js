@@ -215,6 +215,19 @@ async function modUpload(req, res) {
   return res.status(200).json({ url: publicUrl });
 }
 
+// Upload grande (vídeo): gera URL assinada para upload direto browser→Supabase
+async function modUploadUrl(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  if (!await requireAdmin(req, res)) return;
+  const { nome } = req.body;
+  if (!nome) return res.status(400).json({ error: 'nome obrigatório.' });
+  const caminho = `videos/${Date.now()}-${nome.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+  const { data, error } = await supabase.storage.from('elizama-media').createSignedUploadUrl(caminho);
+  if (error) return res.status(500).json({ error: error.message });
+  const { data: { publicUrl } } = supabase.storage.from('elizama-media').getPublicUrl(caminho);
+  return res.status(200).json({ signedUrl: data.signedUrl, publicUrl });
+}
+
 // ─── Router principal ─────────────────────────────────────────────
 const modulos = {
   login:        modLogin,
@@ -226,6 +239,7 @@ const modulos = {
   depoimentos:  modDepoimentos,
   alternativas: modAlternativas,
   upload:       modUpload,
+  'upload-url': modUploadUrl,
 };
 
 export const config = { api: { bodyParser: { sizeLimit: '5mb' } } };

@@ -61,6 +61,21 @@ async function carregarConteudo() {
     if (tituloHistoria && el('historia-titulo'))
       el('historia-titulo').textContent = tituloHistoria;
 
+    // Vídeo / foto da história
+    const videoUrl = configuracoes?.video_historia_url;
+    const mediaEl = el('historia-media');
+    if (videoUrl && mediaEl) {
+      mediaEl.style.background = 'black';
+      mediaEl.style.borderRadius = '24px';
+      mediaEl.style.overflow = 'hidden';
+      mediaEl.style.border = 'none';
+      mediaEl.innerHTML = `<video controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:24px" preload="metadata">
+        <source src="${videoUrl}" type="video/mp4">
+        <source src="${videoUrl}" type="video/webm">
+        Seu navegador não suporta vídeo.
+      </video>`;
+    }
+
     // CTA final
     const ctaTitulo = conteudo?.cta_final_titulo?.titulo;
     const ctaTexto  = conteudo?.cta_final_texto?.corpo;

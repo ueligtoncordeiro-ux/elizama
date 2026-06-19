@@ -38,6 +38,8 @@ async function carregar() {
         </div>`).join('')}
     </div>`).join('');
 
+  const videoAtual = (d.configuracoes || []).find(c => c.chave === 'video_historia_url')?.valor || '';
+
   document.getElementById('root').innerHTML = `
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start">
     <div>
@@ -46,6 +48,18 @@ async function carregar() {
         ${cfgHtml}
         <button class="btn btn-primary" onclick="salvarConfigs()">Salvar Configurações</button>
       </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="card-title">🎬 Vídeo da Seção História</div>
+        <p style="font-size:.82rem;color:#6B7280;margin-bottom:1rem">Vídeo que aparece ao lado da história de Elizama. Máx 200MB. Substitui a imagem placeholder.</p>
+        <div class="form-group">
+          <label>Arquivo de vídeo (MP4 recomendado)</label>
+          <input type="file" accept="video/*" onchange="uploadVideo(this)" style="width:100%;padding:.5rem;border:1px solid #E5E7EB;border-radius:8px">
+          <div id="video-status" style="font-size:.78rem;margin-top:.4rem;font-weight:500">${videoAtual ? '✓ Vídeo atual configurado' : 'Nenhum vídeo cadastrado'}</div>
+          <input type="hidden" id="video-url-input" value="${videoAtual}">
+        </div>
+        ${videoAtual ? `<video controls style="width:100%;border-radius:12px;margin-top:.5rem" preload="metadata"><source src="${videoAtual}">Vídeo atual</video>` : ''}
+      </div>
     </div>
     <div>
       ${secHtml}
@@ -53,6 +67,59 @@ async function carregar() {
     </div>
   </div>`;
 }
+
+window.uploadVideo = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 200 * 1024 * 1024) { toast('Vídeo muito grande (máx 200MB)', false); return; }
+
+  const statusEl = document.getElementById('video-status');
+  statusEl.textContent = 'Obtendo URL de upload…';
+  statusEl.style.color = '#92400E';
+
+  // 1. Pede URL assinada ao servidor
+  const urlRes = await api('upload-url', 'POST', { nome: file.name });
+  if (!urlRes?.signedUrl) {
+    statusEl.textContent = '✗ Erro: ' + (urlRes?.error || 'Falha ao obter URL');
+    statusEl.style.color = '#991B1B';
+    return;
+  }
+
+  // 2. Upload direto browser → Supabase (sem passar pelo Vercel)
+  statusEl.textContent = 'Enviando vídeo… 0%';
+  const xhr = new XMLHttpRequest();
+  xhr.open('PUT', urlRes.signedUrl);
+  xhr.setRequestHeader('Content-Type', file.type);
+  xhr.upload.onprogress = e => {
+    if (e.lengthComputable) {
+      const pct = Math.round(e.loaded / e.total * 100);
+      statusEl.textContent = `Enviando vídeo… ${pct}%`;
+    }
+  };
+  xhr.onload = async () => {
+    if (xhr.status === 200 || xhr.status === 204) {
+      // 3. Salva a URL pública na configuração
+      document.getElementById('video-url-input').value = urlRes.publicUrl;
+      const r = await api('conteudo', 'PUT', { tipo: 'configuracao', chave: 'video_historia_url', valor: urlRes.publicUrl });
+      if (r?.error) {
+        statusEl.textContent = '✗ Upload ok, mas erro ao salvar: ' + r.error;
+        statusEl.style.color = '#991B1B';
+      } else {
+        statusEl.textContent = '✓ Vídeo enviado e salvo com sucesso!';
+        statusEl.style.color = '#065F46';
+        toast('Vídeo da história atualizado!');
+      }
+    } else {
+      statusEl.textContent = '✗ Erro no upload: HTTP ' + xhr.status;
+      statusEl.style.color = '#991B1B';
+    }
+  };
+  xhr.onerror = () => {
+    statusEl.textContent = '✗ Falha na conexão durante o upload';
+    statusEl.style.color = '#991B1B';
+  };
+  xhr.send(file);
+};
 
 window.salvarConfigs = async () => {
   const inputs = document.querySelectorAll('.cfg-input');
