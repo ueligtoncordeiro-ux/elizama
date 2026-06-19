@@ -435,8 +435,8 @@
   </div>
   <div>
     <p class="section-label">A história</p>
-    <h2 class="section-title">Quem é Elizama?</h2>
-    <p class="section-body" id="historia-corpo">[Narrativa pessoal de Elizama — inserir após confirmar o que ela autoriza compartilhar sobre diagnóstico, trajetória e necessidade.]</p>
+    <h2 class="section-title" id="historia-titulo">Quem é Elizama?</h2>
+    <p class="section-body" id="historia-corpo">Carregando história...</p>
     <blockquote class="historia-quote" id="historia-citacao">"Eu amo, tu amas — e juntos, somos o amor que ela precisa agora."</blockquote>
     <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
       <a href="#doe" class="btn-p">Apoiar Elizama</a>
@@ -612,8 +612,8 @@
 <!-- CTA FINAL -->
 <section class="cta-final">
   <div style="position:relative;z-index:1;">
-    <h2 class="section-title">Você é o amor<br>que Elizama precisa.</h2>
-    <p class="section-body" style="color:rgba(255,255,255,0.7);margin:0 auto 2.5rem;">Não existe doação pequena. Existe amor insuficiente — e o seu pode fazer diferença real agora.</p>
+    <h2 class="section-title" id="cta-titulo">Você é o amor<br>que Elizama precisa.</h2>
+    <p class="section-body" id="cta-texto" style="color:rgba(255,255,255,0.7);margin:0 auto 2.5rem;">Não existe doação pequena. Existe amor insuficiente — e o seu pode fazer diferença real agora.</p>
     <div class="cta-btns">
       <a href="#doe" class="btn-w">Doe agora</a>
       <a href="#embaixadores" class="btn-gw">Ser embaixador</a>
@@ -637,47 +637,15 @@
   const nav = document.getElementById('mainNav');
   window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
 
-  /* SLIDER */
-  const track = document.getElementById('slidesTrack');
-  const slides = document.querySelectorAll('.slide');
-  const dots   = document.querySelectorAll('.sdot');
-  const spfill = document.getElementById('spfill');
-  let cur = 0, timer;
-
-  function goTo(n) {
-    slides[cur].classList.remove('active');
-    dots[cur].classList.remove('active');
-    cur = (n + slides.length) % slides.length;
-    slides[cur].classList.add('active');
-    dots[cur].classList.add('active');
-    track.style.transform = `translateX(-${cur * 100}%)`;
-    // Reinicia barra de progresso
-    spfill.classList.remove('run');
-    void spfill.offsetWidth;
-    spfill.classList.add('run');
-    clearInterval(timer);
-    timer = setInterval(() => goTo(cur + 1), 5000);
-  }
-
-  document.getElementById('sNext').addEventListener('click', () => goTo(cur + 1));
-  document.getElementById('sPrev').addEventListener('click', () => goTo(cur - 1));
-  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
-
-  // Touch swipe
-  let tx = 0;
-  track.addEventListener('touchstart', e => tx = e.touches[0].clientX);
-  track.addEventListener('touchend',   e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) goTo(cur + (d > 0 ? 1 : -1)); });
-
-  timer = setInterval(() => goTo(cur + 1), 5000);
-
   /* FORMULÁRIO */
   function selAmt(b) { document.querySelectorAll('.abtn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
   function selPay(b) { document.querySelectorAll('.popt').forEach(x => x.classList.remove('active')); b.classList.add('active'); }
+
   /* Scroll suave */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const el = document.getElementById(a.getAttribute('href').slice(1));
-      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+      const target = document.getElementById(a.getAttribute('href').slice(1));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
     });
   });
 </script>
