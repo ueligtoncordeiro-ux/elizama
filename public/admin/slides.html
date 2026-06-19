@@ -66,6 +66,7 @@ window.abrirModal = (s = null) => {
       </div>
       <div class="form-group"><label>URL da foto</label><input id="m-foto" value="${s?.foto_url||''}" placeholder="https://...">
         <div style="margin-top:.4rem"><input type="file" id="m-file" accept="image/*" onchange="previewFoto(this)"></div>
+        <div id="m-upload-status" style="font-size:.78rem;margin-top:.35rem;font-weight:500;">${s?.foto_url ? '✓ Foto atual carregada' : ''}</div>
         <div id="m-preview" style="margin-top:.5rem">${s?.foto_url?`<img src="${s.foto_url}" style="max-height:80px;border-radius:8px">`:''}</div>
       </div>
       <div style="display:flex;gap:.75rem;margin-top:1rem">
@@ -78,12 +79,37 @@ window.abrirModal = (s = null) => {
 
 window.previewFoto = async (input) => {
   const file = input.files[0]; if (!file) return;
+
+  // Verifica tamanho (máx 4MB)
+  if (file.size > 4 * 1024 * 1024) {
+    toast('Imagem muito grande. Use uma imagem menor que 4MB.', false);
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = async e => {
     document.getElementById('m-preview').innerHTML = `<img src="${e.target.result}" style="max-height:80px;border-radius:8px">`;
-    const up = await api('upload', 'POST', { nome: file.name, tipo: file.type, dados_base64: e.target.result });
-    if (up?.url) { document.getElementById('m-foto').value = up.url; toast('Foto enviada!'); }
-    else toast('Erro no upload', false);
+    document.getElementById('m-upload-status').textContent = 'Enviando imagem…';
+    document.getElementById('m-upload-status').style.color = '#92400E';
+
+    try {
+      const up = await api('upload', 'POST', { nome: file.name, tipo: file.type, dados_base64: e.target.result });
+      if (up?.url) {
+        document.getElementById('m-foto').value = up.url;
+        document.getElementById('m-upload-status').textContent = '✓ Imagem enviada com sucesso!';
+        document.getElementById('m-upload-status').style.color = '#065F46';
+        toast('Foto enviada!');
+      } else {
+        const msg = up?.error || 'Erro desconhecido no upload';
+        document.getElementById('m-upload-status').textContent = '✗ Erro: ' + msg;
+        document.getElementById('m-upload-status').style.color = '#991B1B';
+        toast('Erro no upload: ' + msg, false);
+      }
+    } catch (err) {
+      document.getElementById('m-upload-status').textContent = '✗ Falha na conexão';
+      document.getElementById('m-upload-status').style.color = '#991B1B';
+      toast('Falha ao enviar imagem', false);
+    }
   };
   reader.readAsDataURL(file);
 };
@@ -92,23 +118,39 @@ window.editar = s => window.abrirModal(s);
 window.fecharModal = () => document.getElementById('modal').innerHTML = '';
 
 window.salvar = async () => {
+  // Impede salvar se upload ainda está em andamento
+  const status = document.getElementById('m-upload-status')?.textContent || '';
+  if (status === 'Enviando imagem…') {
+    return toast('Aguarde o upload terminar antes de salvar.', false);
+  }
+
   const id = document.getElementById('m-id').value;
+  const fotoUrl = document.getElementById('m-foto').value || null;
+
   const body = {
-    kicker: document.getElementById('m-kicker').value,
-    titulo: document.getElementById('m-titulo').value,
-    texto:  document.getElementById('m-texto').value,
+    kicker:     document.getElementById('m-kicker').value,
+    titulo:     document.getElementById('m-titulo').value,
+    texto:      document.getElementById('m-texto').value,
     btn1_texto: document.getElementById('m-b1t').value,
     btn1_link:  document.getElementById('m-b1l').value,
     btn2_texto: document.getElementById('m-b2t').value,
     btn2_link:  document.getElementById('m-b2l').value,
     cor_fundo:  document.getElementById('m-cor').value,
     ordem:      Number(document.getElementById('m-ordem').value),
-    foto_url:   document.getElementById('m-foto').value || null,
+    foto_url:   fotoUrl,
     ...(id ? { id } : {})
   };
+
   if (!body.titulo) return toast('Título obrigatório.', false);
+
+  const btn = document.querySelector('.modal button.btn-primary');
+  if (btn) { btn.textContent = 'Salvando…'; btn.disabled = true; }
+
   const r = await api('slides', id ? 'PUT' : 'POST', body);
-  if (r?.error) return toast(r.error, false);
+
+  if (btn) { btn.textContent = 'Salvar'; btn.disabled = false; }
+
+  if (r?.error) return toast('Erro: ' + r.error, false);
   toast('Slide salvo!'); fecharModal(); carregar();
 };
 
