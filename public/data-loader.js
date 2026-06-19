@@ -191,11 +191,104 @@ function iniciarSlider() {
   timer = setInterval(() => goTo(cur + 1), 5000);
 }
 
+/* ── ALTERNATIVAS (rifas / eventos / leilão) ────────────────────── */
+async function carregarAlternativas() {
+  try {
+    const r = await fetch('/api/alternativas');
+    if (!r.ok) return;
+    const items = await r.json();
+    if (!items?.length) return;
+
+    const icones = { rifa: '🎟️', evento: '🏃', leilao: '🔨' };
+    const ctaTexto = { rifa: 'Participar do sorteio', evento: 'Inscrever-se', leilao: 'Ver itens' };
+
+    const grid = document.getElementById('alt-grid');
+    if (!grid) return;
+
+    grid.innerHTML = items.map(a => {
+      const vagas = a.vagas_total
+        ? `<div style="background:var(--off-white);border-radius:10px;padding:.75rem;margin-top:.5rem">
+             <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.35rem">
+               <span style="font-weight:600">${a.tipo === 'rifa' ? 'Bilhetes vendidos' : 'Vagas preenchidas'}</span>
+               <span style="color:var(--coral);font-weight:600">${a.vagas_usadas || 0} / ${a.vagas_total}</span>
+             </div>
+             <div style="height:4px;background:var(--borda);border-radius:100px;overflow:hidden">
+               <div style="height:100%;width:${Math.min(100, Math.round((a.vagas_usadas || 0) / a.vagas_total * 100))}%;background:linear-gradient(90deg,var(--azul),var(--coral));border-radius:100px"></div>
+             </div>
+           </div>` : '';
+      const data = a.data_evento
+        ? `<p style="font-size:.75rem;color:var(--suave);margin-top:.4rem">📅 ${new Date(a.data_evento).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</p>`
+        : '';
+      const valor = a.valor ? `<p style="font-size:.8rem;font-weight:600;color:var(--azul);margin-top:.4rem">R$ ${Number(a.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>` : '';
+      const link = a.link_externo
+        ? `<a href="${a.link_externo}" target="_blank" class="alt-cta">${ctaTexto[a.tipo] || 'Saiba mais'}</a>`
+        : `<span class="alt-cta" style="opacity:.5;cursor:default">Em breve</span>`;
+
+      return `<div class="alt-card" id="${a.tipo}">
+        ${a.imagem_url
+          ? `<div class="alt-top" style="padding:0"><img src="${a.imagem_url}" style="width:100%;height:130px;object-fit:cover"></div>`
+          : `<div class="alt-top">${icones[a.tipo] || '🎯'}</div>`}
+        <div class="alt-body">
+          <p class="alt-title">${a.titulo}</p>
+          ${a.descricao ? `<p class="alt-desc">${a.descricao}</p>` : ''}
+          ${valor}${data}${vagas}
+          ${link}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { console.warn('alternativas:', e); }
+}
+
+/* ── DEPOIMENTOS ────────────────────────────────────────────────── */
+async function carregarDepoimentos() {
+  try {
+    const r = await fetch('/api/depoimentos');
+    if (!r.ok) return;
+    const deps = await r.json();
+    const grid = document.getElementById('dep-grid');
+    if (!grid) return;
+
+    if (!deps?.length) {
+      document.getElementById('depoimentos')?.style.setProperty('display', 'none');
+      return;
+    }
+
+    grid.innerHTML = deps.map(d => `
+      <div style="background:var(--off-white);border-radius:20px;padding:1.75rem;border:1px solid var(--borda)">
+        <p style="font-size:.95rem;line-height:1.7;color:var(--texto);margin-bottom:1.25rem">"${d.texto}"</p>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          ${d.foto_url
+            ? `<img src="${d.foto_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
+            : `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--azul),var(--coral));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.9rem">${d.nome.charAt(0)}</div>`}
+          <div>
+            <p style="font-weight:600;font-size:.9rem">${d.nome}</p>
+            <p style="font-size:.75rem;color:var(--coral);font-weight:500">Apoiador(a) da campanha</p>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (e) { console.warn('depoimentos:', e); }
+}
+
+/* ── CONTADOR EMBAIXADORES ──────────────────────────────────────── */
+async function carregarEmbaixadores() {
+  try {
+    const r = await fetch('/api/meta');
+    if (!r.ok) return;
+    // embaixadores ativos via vw_meta_campanha ou fallback
+    const d = await r.json();
+    const emb = el('stat-embaixadores');
+    if (emb && d.total_embaixadores !== undefined)
+      emb.textContent = d.total_embaixadores;
+  } catch (e) { /* silencioso */ }
+}
+
 /* ── INICIALIZAR ────────────────────────────────────────────────── */
 Promise.all([
   carregarMeta(),
   carregarConteudo(),
   carregarSlides(),
+  carregarAlternativas(),
+  carregarDepoimentos(),
 ]);
 
 setInterval(carregarMeta, 60000);
