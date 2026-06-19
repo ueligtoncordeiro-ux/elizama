@@ -69,14 +69,25 @@ async function carregarConteudo() {
       mediaEl.style.borderRadius = '24px';
       mediaEl.style.overflow = 'hidden';
       mediaEl.style.border = 'none';
-      mediaEl.innerHTML = `<video id="historia-video" playsinline muted loop preload="metadata"
-        style="width:100%;height:100%;object-fit:cover;border-radius:24px;cursor:pointer"
-        title="Clique para ativar o som">
-        <source src="${videoUrl}" type="video/mp4">
-        <source src="${videoUrl}" type="video/webm">
-      </video>`;
+      mediaEl.style.position = 'relative';
+      mediaEl.innerHTML = `
+        <video id="historia-video" playsinline muted loop preload="metadata"
+          style="width:100%;height:100%;object-fit:cover;border-radius:24px;cursor:pointer">
+          <source src="${videoUrl}" type="video/mp4">
+          <source src="${videoUrl}" type="video/webm">
+        </video>
+        <div id="som-hint" style="
+          position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+          background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);
+          color:white;border-radius:100px;padding:0.45rem 1.1rem;
+          font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;
+          cursor:pointer;white-space:nowrap;transition:opacity 0.4s;pointer-events:none;
+          font-family:'DM Sans',sans-serif;letter-spacing:0.02em;">
+          🔇 Toque para ativar o som
+        </div>`;
 
       const video = document.getElementById('historia-video');
+      const hint  = document.getElementById('som-hint');
 
       // Autoplay ao entrar na tela, pausa ao sair
       const observer = new IntersectionObserver((entries) => {
@@ -94,6 +105,15 @@ async function carregarConteudo() {
       // Clique para ativar/desativar som
       video.addEventListener('click', () => {
         video.muted = !video.muted;
+        if (!video.muted) {
+          hint.innerHTML = '🔊 Som ativado';
+          setTimeout(() => { hint.style.opacity = '0'; }, 1200);
+          setTimeout(() => { hint.style.display = 'none'; }, 1600);
+        } else {
+          hint.style.display = 'flex';
+          hint.style.opacity = '1';
+          hint.innerHTML = '🔇 Toque para ativar o som';
+        }
       });
     }
 
