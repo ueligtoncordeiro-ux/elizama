@@ -85,40 +85,56 @@ window.uploadVideo = async (input) => {
     return;
   }
 
-  // 2. Upload direto browser → Supabase (sem passar pelo Vercel)
+  // 2. Upload direto browser → Supabase via XHR com progress
   statusEl.textContent = 'Enviando vídeo… 0%';
-  const xhr = new XMLHttpRequest();
-  xhr.open('PUT', urlRes.signedUrl);
-  xhr.setRequestHeader('Content-Type', file.type);
-  xhr.upload.onprogress = e => {
-    if (e.lengthComputable) {
-      const pct = Math.round(e.loaded / e.total * 100);
-      statusEl.textContent = `Enviando vídeo… ${pct}%`;
-    }
-  };
-  xhr.onload = async () => {
-    if (xhr.status === 200 || xhr.status === 204) {
-      // 3. Salva a URL pública na configuração
-      document.getElementById('video-url-input').value = urlRes.publicUrl;
-      const r = await api('conteudo', 'PUT', { tipo: 'configuracao', chave: 'video_historia_url', valor: urlRes.publicUrl });
-      if (r?.error) {
-        statusEl.textContent = '✗ Upload ok, mas erro ao salvar: ' + r.error;
-        statusEl.style.color = '#991B1B';
-      } else {
-        statusEl.textContent = '✓ Vídeo enviado e salvo com sucesso!';
-        statusEl.style.color = '#065F46';
-        toast('Vídeo da história atualizado!');
+
+  await new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', urlRes.signedUrl);
+    // Supabase signed upload: não setar Content-Type manualmente
+    // e adicionar x-upsert para permitir sobrescrita
+    xhr.setRequestHeader('x-upsert', 'true');
+
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const pct = Math.round(e.loaded / e.total * 100);
+        statusEl.textContent = `Enviando vídeo… ${pct}%`;
       }
-    } else {
-      statusEl.textContent = '✗ Erro no upload: HTTP ' + xhr.status;
+    };
+
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        // 3. Salva a URL pública na configuração
+        document.getElementById('video-url-input').value = urlRes.publicUrl;
+        const r = await api('conteudo', 'PUT', {
+          tipo: 'configuracao',
+          chave: 'video_historia_url',
+          valor: urlRes.publicUrl
+        });
+        if (r?.error) {
+          statusEl.textContent = '✗ Upload ok, mas erro ao salvar: ' + r.error;
+          statusEl.style.color = '#991B1B';
+        } else {
+          statusEl.textContent = '✓ Vídeo enviado e salvo com sucesso!';
+          statusEl.style.color = '#065F46';
+          toast('Vídeo da história atualizado!');
+        }
+      } else {
+        // Mostra o corpo do erro para debug
+        statusEl.textContent = `✗ Erro HTTP ${xhr.status}: ${xhr.responseText.slice(0, 120)}`;
+        statusEl.style.color = '#991B1B';
+      }
+      resolve();
+    };
+
+    xhr.onerror = () => {
+      statusEl.textContent = '✗ Falha na conexão durante o upload';
       statusEl.style.color = '#991B1B';
-    }
-  };
-  xhr.onerror = () => {
-    statusEl.textContent = '✗ Falha na conexão durante o upload';
-    statusEl.style.color = '#991B1B';
-  };
-  xhr.send(file);
+      resolve();
+    };
+
+    xhr.send(file);
+  });
 };
 
 window.salvarConfigs = async () => {
