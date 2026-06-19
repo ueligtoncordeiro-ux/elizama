@@ -69,11 +69,32 @@ async function carregarConteudo() {
       mediaEl.style.borderRadius = '24px';
       mediaEl.style.overflow = 'hidden';
       mediaEl.style.border = 'none';
-      mediaEl.innerHTML = `<video controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:24px" preload="metadata">
+      mediaEl.innerHTML = `<video id="historia-video" playsinline muted loop preload="metadata"
+        style="width:100%;height:100%;object-fit:cover;border-radius:24px;cursor:pointer"
+        title="Clique para ativar o som">
         <source src="${videoUrl}" type="video/mp4">
         <source src="${videoUrl}" type="video/webm">
-        Seu navegador não suporta vídeo.
       </video>`;
+
+      const video = document.getElementById('historia-video');
+
+      // Autoplay ao entrar na tela, pausa ao sair
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.35 });
+
+      observer.observe(mediaEl);
+
+      // Clique para ativar/desativar som
+      video.addEventListener('click', () => {
+        video.muted = !video.muted;
+      });
     }
 
     // CTA final
